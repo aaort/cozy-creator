@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "registry:add": "node scripts/add-registry.js"
+    "registry:add": "node scripts/add-registry.js",
+    "local:add": "node scripts/add-local.js"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
