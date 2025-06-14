@@ -31,13 +31,15 @@ export function ModeToggle() {
 
   return (
     <Button
-      className="h-7 w-7"
+      className="h-9 w-9 p-2"
       onClick={toggleTheme}
       size="icon"
       variant="ghost"
     >
-      <Moon className="dark:hidden" />
-      <Sun className="hidden dark:block" />
+      <div className="relative">
+        <Moon className="h-4 w-4 transition-all duration-300 ease-in-out dark:rotate-90 dark:scale-0 dark:opacity-0" />
+        <Sun className="absolute inset-0 h-4 w-4 transition-all duration-300 ease-in-out rotate-90 scale-0 opacity-0 dark:rotate-0 dark:scale-100 dark:opacity-100" />
+      </div>
       <span className="sr-only">Toggle theme</span>
     </Button>
   );
