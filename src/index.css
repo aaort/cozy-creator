@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
   --color-background: 44 56% 94%; /* #fbf1c7 - Gruvbox Light */
@@ -140,4 +143,84 @@
 
 [data-rehype-pretty-code-title] + pre {
   @apply mt-2;
+}
+
+:root {
+  --background: hsl(44 56% 94%);
+  --foreground: hsl(30 7% 23%);
+  --card: hsl(44 56% 94%);
+  --card-foreground: hsl(30 7% 23%);
+  --popover: hsl(44 56% 94%);
+  --popover-foreground: hsl(30 7% 23%);
+  --primary: hsl(2 92% 32%);
+  --primary-foreground: hsl(44 56% 94%);
+  --secondary: hsl(64 78% 25%);
+  --secondary-foreground: hsl(44 56% 94%);
+  --muted: hsl(38 18% 57%);
+  --muted-foreground: hsl(30 7% 23%);
+  --accent: hsl(38 69% 41%);
+  --accent-foreground: hsl(44 56% 94%);
+  --destructive: hsl(0 73% 46%);
+  --destructive-foreground: hsl(44 56% 94%);
+  --border: hsl(39 35% 78%);
+  --input: hsl(39 35% 78%);
+  --ring: hsl(38 69% 41%);
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: hsl(30 7% 16%);
+  --foreground: hsl(44 56% 86%);
+  --card: hsl(30 7% 16%);
+  --card-foreground: hsl(44 56% 86%);
+  --popover: hsl(30 7% 16%);
+  --popover-foreground: hsl(44 56% 86%);
+  --primary: hsl(2 96% 60%);
+  --primary-foreground: hsl(30 7% 16%);
+  --secondary: hsl(82 60% 42%);
+  --secondary-foreground: hsl(30 7% 16%);
+  --muted: hsl(38 11% 54%);
+  --muted-foreground: hsl(44 56% 86%);
+  --accent: hsl(45 96% 57%);
+  --accent-foreground: hsl(30 7% 16%);
+  --destructive: hsl(0 73% 46%);
+  --destructive-foreground: hsl(44 56% 86%);
+  --border: hsl(24 9% 23%);
+  --input: hsl(24 9% 23%);
+  --ring: hsl(44 64% 48%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
