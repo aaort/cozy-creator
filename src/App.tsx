@@ -5,7 +5,7 @@ import { LiveFeed, Videos } from "./pages";
 
 function App() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground overflow-hidden max-h-[100vh]">
       <Header />
 
       <Routes>
