@@ -114,8 +114,6 @@ export function VirtualizedImageGrid({
     [images],
   );
 
-  console.log("images", images);
-
   const itemWidth = Math.floor(
     (containerWidth - gap * (columns + 1)) / columns,
   );
