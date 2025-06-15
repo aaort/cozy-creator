@@ -8,8 +8,13 @@ export interface ImageRendererProps {
   onClick?: (item: GridItem) => void;
 }
 
-export const ImagePlaceholder: React.FC = () => (
-  <div className="w-full h-full bg-muted/20 animate-pulse rounded-lg" />
+export const ImagePlaceholder: React.FC<{ aspectRatio?: number }> = ({
+  aspectRatio,
+}) => (
+  <div
+    className="w-full h-full bg-muted/20 animate-pulse rounded-lg"
+    style={aspectRatio ? { aspectRatio } : undefined}
+  />
 );
 
 export const ImageRenderer: React.FC<ImageRendererProps> = ({
@@ -27,20 +32,24 @@ export const ImageRenderer: React.FC<ImageRendererProps> = ({
   };
 
   // Determine the correct styling for maintaining aspect ratio
+  const aspectRatio = item.aspectRatio || (item.type === "video" ? 16 / 9 : 1);
   const imgStyle = {
     width: "100%",
     height: "100%",
     objectFit: "cover" as const,
+    aspectRatio,
   };
 
   return (
     <div
       className="relative w-full h-full overflow-hidden rounded-lg group cursor-pointer hover:shadow-lg transition-all duration-300"
       onClick={handleClick}
-      style={{ aspectRatio: item.aspectRatio }}
+      style={{
+        aspectRatio: item.aspectRatio || (item.type === "video" ? 16 / 9 : 1),
+      }}
     >
       {/* Placeholder shown while image loads */}
-      {!imageLoaded && <ImagePlaceholder />}
+      {!imageLoaded && <ImagePlaceholder aspectRatio={item.aspectRatio} />}
 
       <img
         src={item.url}

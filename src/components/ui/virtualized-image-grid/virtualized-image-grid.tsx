@@ -34,6 +34,41 @@ export function VirtualizedImageGrid({
     useMediaModal();
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
+  // Custom row height calculation for images
+  const getImageRowHeight = useCallback(
+    (
+      index: number,
+      items: GridItem[],
+      columns: number,
+      itemWidth: number,
+      gap: number,
+    ) => {
+      const startItemIndex = index * columns;
+      let maxRowHeight = itemWidth; // Default square height
+      let hasItems = false;
+
+      // Find the tallest item in this row
+      for (let i = 0; i < columns; i++) {
+        const itemIndex = startItemIndex + i;
+        if (itemIndex < items.length) {
+          hasItems = true;
+          const item = items[itemIndex];
+          const aspectRatio = item.aspectRatio || 1;
+          const itemHeight = itemWidth / aspectRatio;
+          maxRowHeight = Math.max(maxRowHeight, itemHeight);
+        }
+      }
+
+      // If no items in this row, use minimal height
+      if (!hasItems) {
+        return gap;
+      }
+
+      return maxRowHeight + gap / 2; // Use smaller spacing between rows
+    },
+    [],
+  );
+
   const {
     images,
     hasNextPage,
@@ -131,6 +166,7 @@ export function VirtualizedImageGrid({
           availableHeight={availableHeight}
           containerWidth={containerWidth}
           onItemClick={handleItemClick}
+          getRowHeight={getImageRowHeight}
         />
       </div>
 

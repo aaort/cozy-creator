@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/virtualized-grid";
 import { HEADER_HEIGHT } from "@constants/layout";
 import videoMetadata from "@data/video-metadata.json";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 // Convert the initial videos from the JSON data
 const initialVideos: GridItem[] = videoMetadata.videos.map((vid, index) => ({
@@ -35,6 +35,23 @@ export function Videos() {
   const availableHeight = useAvailableHeight();
   const { isOpen, currentItem, openModal, closeModal, goToNext, goToPrevious } =
     useMediaModal();
+
+  // Custom row height calculation for videos - uses a fixed 16:9 aspect ratio
+  const getVideoRowHeight = useCallback(
+    (
+      _: number,
+      __: GridItem[],
+      ___: number,
+      itemWidth: number,
+      gap: number,
+    ) => {
+      // Fixed height for video rows based on 16:9 aspect ratio
+      // We use a smaller gap (gap/2) to reduce the excessive vertical spacing
+      const videoHeight = (itemWidth * 9) / 16;
+      return videoHeight + gap / 2;
+    },
+    [],
+  );
 
   const {
     videos,
@@ -94,6 +111,7 @@ export function Videos() {
             availableHeight={availableHeight}
             containerWidth={containerWidth}
             onItemClick={handleItemClick}
+            getRowHeight={getVideoRowHeight}
           />
         )}
       </main>

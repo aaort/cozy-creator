@@ -47,24 +47,23 @@ function GridItemComponent({
 
   const item = items[itemIndex];
 
-  // Calculate height based on aspect ratio
-  const itemHeight = item.aspectRatio
-    ? itemWidth / item.aspectRatio
-    : itemWidth;
+  // Calculate height based on aspect ratio, default to 16/9 for videos
+  const aspectRatio = item.aspectRatio || (item.type === "video" ? 16 / 9 : 1);
+  const itemHeight = itemWidth / aspectRatio;
 
   return (
     <div
       style={{
         ...style,
         left: (style.left as number) + gap / 2,
-        top: (style.top as number) + gap / 2,
+        top: (style.top as number) + gap / 4, // reduce vertical spacing
         width: itemWidth,
         height: itemHeight,
         overflow: "hidden",
         position: "absolute",
         display: "flex",
         justifyContent: "center",
-        alignItems: "flex-start",
+        alignItems: "center",
       }}
     >
       {renderItem(item, itemWidth, false, onItemClick)}
@@ -90,11 +89,19 @@ export interface VirtualizedGridProps {
   availableHeight: number;
   containerWidth: number;
   onItemClick?: (item: GridItem) => void;
+  getRowHeight?: (
+    index: number,
+    items: GridItem[],
+    columns: number,
+    itemWidth: number,
+    gap: number,
+  ) => number;
+  defaultRowHeight?: number;
 }
 
 export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
-  function VirtualizedGrid(
-    {
+  function VirtualizedGrid(props, ref) {
+    const {
       items,
       renderItem,
       hasNextPage,
@@ -107,9 +114,7 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
       availableHeight,
       containerWidth,
       onItemClick,
-    },
-    ref,
-  ) {
+    } = props;
     const gridRef = useRef<Grid>(null);
 
     // Reset grid when columns change
@@ -131,27 +136,45 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
     const rowCount = Math.ceil(items.length / columns);
     const columnCount = columns;
 
+    // Use custom row height calculation function if provided, otherwise use default calculation
     // Calculate row heights based on items and their aspect ratios
     const getRowHeight = useCallback(
       (index: number) => {
+        // If custom row height calculation is provided, use it
+        if (props.getRowHeight) {
+          return props.getRowHeight(index, items, columns, itemWidth, gap);
+        }
+
+        // Default row height calculation
         const startItemIndex = index * columns;
-        let maxRowHeight = itemWidth; // Default square height
+        let maxRowHeight = props.defaultRowHeight || itemWidth; // Use default height or square
+        let hasItems = false;
 
         // Find the tallest item in this row
         for (let i = 0; i < columns; i++) {
           const itemIndex = startItemIndex + i;
           if (itemIndex < items.length) {
+            hasItems = true;
             const item = items[itemIndex];
-            const itemHeight = item.aspectRatio
-              ? itemWidth / item.aspectRatio
-              : itemWidth;
+            // Default to 16/9 for videos if no aspect ratio is provided
+            const aspectRatio =
+              item.aspectRatio || (item.type === "video" ? 16 / 9 : 1);
+            const itemHeight = itemWidth / aspectRatio;
             maxRowHeight = Math.max(maxRowHeight, itemHeight);
           }
         }
 
-        return maxRowHeight + gap; // Add gap for spacing
+        // If no items in this row, use minimal height
+        if (!hasItems) {
+          return gap;
+        }
+
+        // Use minimal spacing for all item types to reduce vertical gaps
+        const defaultSpacing = gap / 4;
+
+        return maxRowHeight + defaultSpacing;
       },
-      [columns, gap, items, itemWidth],
+      [props, columns, itemWidth, gap, items],
     );
 
     // Recalculate grid when items or dimensions change
@@ -229,7 +252,7 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
               }}
               className="custom-scrollbar overflow-y-auto overflow-x-hidden"
               columnCount={columnCount}
-              columnWidth={() => itemWidth + gap}
+              columnWidth={() => itemWidth + gap / 2} // horizontal spacing
               height={availableHeight}
               rowCount={rowCount}
               rowHeight={getRowHeight} // Use dynamic row height function

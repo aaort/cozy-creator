@@ -8,8 +8,13 @@ export interface VideoRendererProps {
   onClick?: (item: GridItem) => void;
 }
 
-export const VideoPlaceholder: React.FC = () => (
-  <div className="w-full h-full bg-muted/20 animate-pulse rounded-lg" />
+export const VideoPlaceholder: React.FC<{ aspectRatio?: number }> = ({
+  aspectRatio,
+}) => (
+  <div
+    className="w-full h-full bg-muted/20 animate-pulse rounded-lg"
+    style={aspectRatio ? { aspectRatio } : undefined}
+  />
 );
 
 export const VideoRenderer: React.FC<VideoRendererProps> = ({
@@ -39,9 +44,10 @@ export const VideoRenderer: React.FC<VideoRendererProps> = ({
     <div
       className="relative w-full h-full overflow-hidden rounded-lg group cursor-pointer hover:shadow-lg transition-all duration-300"
       onClick={handleClick}
+      style={{ aspectRatio: item.aspectRatio }}
     >
       {/* Placeholder shown while video loads */}
-      {!videoLoaded && <VideoPlaceholder />}
+      {!videoLoaded && <VideoPlaceholder aspectRatio={item.aspectRatio} />}
 
       <video
         ref={videoRef}
@@ -56,6 +62,7 @@ export const VideoRenderer: React.FC<VideoRendererProps> = ({
           group-hover:scale-105
           ${videoLoaded ? "opacity-100" : "opacity-0"}
         `}
+        style={{ aspectRatio: item.aspectRatio }}
         src={item.url}
         onLoadedData={handleLoadedData}
       />
