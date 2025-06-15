@@ -5,6 +5,7 @@ export interface VideoRendererProps {
   item: GridItem;
   width: number;
   isLoaded: boolean;
+  onClick?: (item: GridItem) => void;
 }
 
 export const VideoPlaceholder: React.FC = () => (
@@ -14,6 +15,7 @@ export const VideoPlaceholder: React.FC = () => (
 export const VideoRenderer: React.FC<VideoRendererProps> = ({
   item,
   isLoaded: externalIsLoaded,
+  onClick,
 }) => {
   const [internalIsLoaded, setInternalIsLoaded] = useState(false);
   const videoLoaded = externalIsLoaded || internalIsLoaded;
@@ -27,8 +29,17 @@ export const VideoRenderer: React.FC<VideoRendererProps> = ({
     });
   };
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick(item);
+    }
+  };
+
   return (
-    <div className="relative w-full h-full overflow-hidden rounded-lg group cursor-pointer hover:shadow-lg transition-all duration-300">
+    <div
+      className="relative w-full h-full overflow-hidden rounded-lg group cursor-pointer hover:shadow-lg transition-all duration-300"
+      onClick={handleClick}
+    >
       {/* Placeholder shown while video loads */}
       {!videoLoaded && <VideoPlaceholder />}
 

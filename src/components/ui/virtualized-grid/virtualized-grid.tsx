@@ -22,7 +22,9 @@ interface GridItemData {
     item: GridItem,
     width: number,
     isLoaded: boolean,
+    onItemClick?: (item: GridItem) => void,
   ) => React.ReactNode;
+  onItemClick?: (item: GridItem) => void;
 }
 
 interface GridItemProps {
@@ -38,7 +40,7 @@ function GridItemComponent({
   style,
   data,
 }: GridItemProps) {
-  const { columnCount, items, itemWidth, gap, renderItem } = data;
+  const { columnCount, items, itemWidth, gap, renderItem, onItemClick } = data;
   const itemIndex = rowIndex * columnCount + columnIndex;
 
   if (itemIndex >= items.length) return null;
@@ -55,7 +57,7 @@ function GridItemComponent({
         height: item.aspectRatio ? itemWidth / item.aspectRatio : itemWidth,
       }}
     >
-      {renderItem(item, itemWidth, false)}
+      {renderItem(item, itemWidth, false, onItemClick)}
     </div>
   );
 }
@@ -66,6 +68,7 @@ export interface VirtualizedGridProps {
     item: GridItem,
     width: number,
     isLoaded: boolean,
+    onItemClick?: (item: GridItem) => void,
   ) => React.ReactNode;
   hasNextPage: boolean;
   isNextPageLoading: boolean;
@@ -76,6 +79,7 @@ export interface VirtualizedGridProps {
   columns: number;
   availableHeight: number;
   containerWidth: number;
+  onItemClick?: (item: GridItem) => void;
 }
 
 export function VirtualizedGrid({
@@ -90,6 +94,7 @@ export function VirtualizedGrid({
   columns,
   availableHeight,
   containerWidth,
+  onItemClick,
 }: VirtualizedGridProps) {
   const gridRef = useRef<Grid>(null);
 
@@ -114,6 +119,7 @@ export function VirtualizedGrid({
     columnCount,
     items,
     renderItem,
+    onItemClick,
   };
 
   if (!containerWidth) {

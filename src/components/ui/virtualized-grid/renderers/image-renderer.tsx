@@ -5,6 +5,7 @@ export interface ImageRendererProps {
   item: GridItem;
   width: number;
   isLoaded: boolean;
+  onClick?: (item: GridItem) => void;
 }
 
 export const ImagePlaceholder: React.FC = () => (
@@ -14,12 +15,22 @@ export const ImagePlaceholder: React.FC = () => (
 export const ImageRenderer: React.FC<ImageRendererProps> = ({
   item,
   isLoaded: externalIsLoaded,
+  onClick,
 }) => {
   const [internalIsLoaded, setInternalIsLoaded] = useState(false);
   const imageLoaded = externalIsLoaded || internalIsLoaded;
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick(item);
+    }
+  };
+
   return (
-    <div className="relative w-full h-full overflow-hidden rounded-lg group cursor-pointer hover:shadow-lg transition-all duration-300">
+    <div
+      className="relative w-full h-full overflow-hidden rounded-lg group cursor-pointer hover:shadow-lg transition-all duration-300"
+      onClick={handleClick}
+    >
       {/* Placeholder shown while image loads */}
       {!imageLoaded && <ImagePlaceholder />}
 

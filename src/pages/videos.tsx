@@ -1,3 +1,4 @@
+import { MediaModal, useMediaModal } from "@/components/ui/media-modal";
 import type { GridItem } from "@/components/ui/virtualized-grid";
 import {
   VideoRenderer,
@@ -32,6 +33,8 @@ export function Videos() {
     containerRef as React.RefObject<HTMLElement>,
   );
   const availableHeight = useAvailableHeight();
+  const { isOpen, currentItem, openModal, closeModal, goToNext, goToPrevious } =
+    useMediaModal();
 
   const {
     videos,
@@ -52,8 +55,24 @@ export function Videos() {
     updateSpace(props.scrollTop);
   };
 
-  const renderVideo = (item: GridItem, width: number, isLoaded: boolean) => {
-    return <VideoRenderer item={item} width={width} isLoaded={isLoaded} />;
+  const handleItemClick = (item: GridItem) => {
+    openModal(item, videos);
+  };
+
+  const renderVideo = (
+    item: GridItem,
+    width: number,
+    isLoaded: boolean,
+    onClick?: (item: GridItem) => void,
+  ) => {
+    return (
+      <VideoRenderer
+        item={item}
+        width={width}
+        isLoaded={isLoaded}
+        onClick={onClick}
+      />
+    );
   };
 
   return (
@@ -74,9 +93,19 @@ export function Videos() {
             columns={columns}
             availableHeight={availableHeight}
             containerWidth={containerWidth}
+            onItemClick={handleItemClick}
           />
         )}
       </main>
+
+      {/* Media Modal */}
+      <MediaModal
+        isOpen={isOpen}
+        onClose={closeModal}
+        currentItem={currentItem}
+        onNext={goToNext}
+        onPrevious={goToPrevious}
+      />
     </div>
   );
 }
