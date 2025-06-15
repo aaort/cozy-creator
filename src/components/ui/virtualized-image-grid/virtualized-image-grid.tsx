@@ -1,9 +1,10 @@
+import { MediaModal, useMediaModal } from "@/components/ui/media-modal";
+import { imagesToGridItems } from "@/components/ui/virtualized-grid/adapters/image-adapter";
+import { ImageRenderer } from "@/components/ui/virtualized-grid/renderers";
+import type { GridItem } from "@/components/ui/virtualized-grid/virtualized-grid";
+import { VirtualizedGrid } from "@/components/ui/virtualized-grid/virtualized-grid";
 import { useCallback, useEffect, useRef } from "react";
 import type { GridOnScrollProps } from "react-window";
-import { imagesToGridItems } from "../virtualized-grid/adapters/image-adapter";
-import { ImageRenderer } from "../virtualized-grid/renderers";
-import type { GridItem } from "../virtualized-grid/virtualized-grid";
-import { VirtualizedGrid } from "../virtualized-grid/virtualized-grid";
 import { useResponsiveColumns } from "./hooks/columns";
 import { useAvailableHeight } from "./hooks/height";
 import { useImages } from "./hooks/images";
@@ -28,6 +29,8 @@ export function VirtualizedImageGrid({
   className = "",
 }: VirtualizedImageGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isOpen, currentItem, openModal, closeModal, goToNext, goToPrevious } =
+    useMediaModal();
 
   const {
     images,
@@ -50,9 +53,26 @@ export function VirtualizedImageGrid({
     return imagesToGridItems(images);
   }, [images])();
 
+  // Handle item click
+  const handleItemClick = (item: GridItem) => {
+    openModal(item, gridItems);
+  };
+
   // Render the image component
-  const renderImage = (item: GridItem, width: number, isLoaded: boolean) => {
-    return <ImageRenderer item={item} width={width} isLoaded={isLoaded} />;
+  const renderImage = (
+    item: GridItem,
+    width: number,
+    isLoaded: boolean,
+    onClick?: (item: GridItem) => void,
+  ) => {
+    return (
+      <ImageRenderer
+        item={item}
+        width={width}
+        isLoaded={isLoaded}
+        onClick={onClick}
+      />
+    );
   };
 
   if (!containerWidth) {
@@ -72,19 +92,31 @@ export function VirtualizedImageGrid({
   }
 
   return (
-    <div ref={containerRef} className={`w-full ${className}`}>
-      <VirtualizedGrid
-        items={gridItems}
-        renderItem={renderImage}
-        hasNextPage={hasNextPage}
-        isNextPageLoading={isNextPageLoading}
-        loadNextPage={loadNextPage}
-        gap={gap}
-        onGridScroll={onGridScroll}
-        columns={columns}
-        availableHeight={availableHeight}
-        containerWidth={containerWidth}
+    <>
+      <div ref={containerRef} className={`w-full ${className}`}>
+        <VirtualizedGrid
+          items={gridItems}
+          renderItem={renderImage}
+          hasNextPage={hasNextPage}
+          isNextPageLoading={isNextPageLoading}
+          loadNextPage={loadNextPage}
+          gap={gap}
+          onGridScroll={onGridScroll}
+          columns={columns}
+          availableHeight={availableHeight}
+          containerWidth={containerWidth}
+          onItemClick={handleItemClick}
+        />
+      </div>
+
+      {/* Media Modal */}
+      <MediaModal
+        isOpen={isOpen}
+        onClose={closeModal}
+        currentItem={currentItem}
+        onNext={goToNext}
+        onPrevious={goToPrevious}
       />
-    </div>
+    </>
   );
 }
