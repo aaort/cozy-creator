@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef } from "react";
-import { FixedSizeGrid as Grid, type GridOnScrollProps } from "react-window";
+import React, { forwardRef, useCallback, useEffect, useRef } from "react";
+import { VariableSizeGrid as Grid, type GridOnScrollProps } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
 
 export interface GridItem {
@@ -47,6 +47,11 @@ function GridItemComponent({
 
   const item = items[itemIndex];
 
+  // Calculate height based on aspect ratio
+  const itemHeight = item.aspectRatio
+    ? itemWidth / item.aspectRatio
+    : itemWidth;
+
   return (
     <div
       style={{
@@ -54,7 +59,12 @@ function GridItemComponent({
         left: (style.left as number) + gap / 2,
         top: (style.top as number) + gap / 2,
         width: itemWidth,
-        height: item.aspectRatio ? itemWidth / item.aspectRatio : itemWidth,
+        height: itemHeight,
+        overflow: "hidden",
+        position: "absolute",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
       }}
     >
       {renderItem(item, itemWidth, false, onItemClick)}
@@ -82,151 +92,197 @@ export interface VirtualizedGridProps {
   onItemClick?: (item: GridItem) => void;
 }
 
-export function VirtualizedGrid({
-  items,
-  renderItem,
-  hasNextPage,
-  isNextPageLoading,
-  loadNextPage,
-  gap = 16,
-  onGridScroll,
-  className = "",
-  columns,
-  availableHeight,
-  containerWidth,
-  onItemClick,
-}: VirtualizedGridProps) {
-  const gridRef = useRef<Grid>(null);
+export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
+  function VirtualizedGrid(
+    {
+      items,
+      renderItem,
+      hasNextPage,
+      isNextPageLoading,
+      loadNextPage,
+      gap = 16,
+      onGridScroll,
+      className = "",
+      columns,
+      availableHeight,
+      containerWidth,
+      onItemClick,
+    },
+    ref,
+  ) {
+    const gridRef = useRef<Grid>(null);
 
-  // Reset grid when columns change
-  useEffect(() => {
-    if (gridRef.current) {
-      gridRef.current.setState({ columnIndex: 0, rowIndex: 0 });
-    }
-  }, [columns]);
+    // Reset grid when columns change
+    useEffect(() => {
+      if (gridRef.current) {
+        gridRef.current.resetAfterColumnIndex(0, true);
+        gridRef.current.resetAfterRowIndex(0, true);
+      }
+    }, [columns]);
 
-  const isItemLoaded = useCallback((index: number) => !!items[index], [items]);
+    const isItemLoaded = useCallback(
+      (index: number) => !!items[index],
+      [items],
+    );
 
-  const itemWidth = Math.floor(
-    (containerWidth - gap * (columns + 1)) / columns,
-  );
-  const rowCount = Math.ceil(items.length / columns);
-  const columnCount = columns;
+    const itemWidth = Math.floor(
+      (containerWidth - gap * (columns + 1)) / columns,
+    );
+    const rowCount = Math.ceil(items.length / columns);
+    const columnCount = columns;
 
-  const gridItemData: GridItemData = {
-    gap,
-    itemWidth,
-    columnCount,
-    items,
-    renderItem,
-    onItemClick,
-  };
+    // Calculate row heights based on items and their aspect ratios
+    const getRowHeight = useCallback(
+      (index: number) => {
+        const startItemIndex = index * columns;
+        let maxRowHeight = itemWidth; // Default square height
 
-  if (!containerWidth) {
-    return (
-      <div className={`w-full overflow-hidden ${className}`}>
-        <div
-          className="flex justify-center items-center"
-          style={{ height: availableHeight }}
-        >
-          <div className="flex flex-col items-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="text-muted-foreground">Preparing gallery...</p>
+        // Find the tallest item in this row
+        for (let i = 0; i < columns; i++) {
+          const itemIndex = startItemIndex + i;
+          if (itemIndex < items.length) {
+            const item = items[itemIndex];
+            const itemHeight = item.aspectRatio
+              ? itemWidth / item.aspectRatio
+              : itemWidth;
+            maxRowHeight = Math.max(maxRowHeight, itemHeight);
+          }
+        }
+
+        return maxRowHeight + gap; // Add gap for spacing
+      },
+      [columns, gap, items, itemWidth],
+    );
+
+    // Recalculate grid when items or dimensions change
+    useEffect(() => {
+      if (gridRef.current) {
+        gridRef.current.resetAfterColumnIndex(0);
+        gridRef.current.resetAfterRowIndex(0);
+      }
+    }, [items, itemWidth, columns]);
+
+    const gridItemData: GridItemData = {
+      gap,
+      itemWidth,
+      columnCount,
+      items,
+      renderItem,
+      onItemClick,
+    };
+
+    if (!containerWidth) {
+      return (
+        <div className={`w-full overflow-hidden ${className}`}>
+          <div
+            className="flex justify-center items-center"
+            style={{ height: availableHeight }}
+          >
+            <div className="flex flex-col items-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <p className="text-muted-foreground">Preparing gallery...</p>
+            </div>
           </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={`w-full overflow-hidden ${className}`}
+        style={{
+          touchAction: "pan-y",
+          WebkitOverflowScrolling: "touch",
+          position: "relative",
+        }}
+      >
+        <InfiniteLoader
+          threshold={15}
+          isItemLoaded={isItemLoaded}
+          loadMoreItems={loadNextPage}
+          itemCount={hasNextPage ? items.length + 1 : items.length}
+        >
+          {({ onItemsRendered, ref: infiniteLoaderRef }) => (
+            <Grid
+              onScroll={onGridScroll}
+              ref={(grid) => {
+                gridRef.current = grid;
+                if (typeof infiniteLoaderRef === "function") {
+                  infiniteLoaderRef(grid);
+                } else if (infiniteLoaderRef) {
+                  //@ts-expect-error type is not defineds
+                  infiniteLoaderRef.current = grid;
+                }
+                if (typeof ref === "function") {
+                  ref(grid);
+                } else if (ref) {
+                  ref.current = grid;
+                }
+              }}
+              style={{
+                overflowX: "hidden",
+                width: "100%",
+                overscrollBehavior: "contain", // Prevent scroll chaining
+                WebkitOverflowScrolling: "touch",
+                msOverflowStyle: "none", // Hide scrollbar in IE/Edge
+                scrollbarWidth: "none", // Firefox
+              }}
+              className="custom-scrollbar overflow-y-auto overflow-x-hidden"
+              columnCount={columnCount}
+              columnWidth={() => itemWidth + gap}
+              height={availableHeight}
+              rowCount={rowCount}
+              rowHeight={getRowHeight} // Use dynamic row height function
+              width={containerWidth}
+              itemData={gridItemData}
+              onItemsRendered={({
+                visibleColumnStartIndex,
+                visibleColumnStopIndex,
+                visibleRowStartIndex,
+                visibleRowStopIndex,
+              }) => {
+                const startIndex =
+                  visibleRowStartIndex * columnCount + visibleColumnStartIndex;
+                const stopIndex =
+                  visibleRowStopIndex * columnCount + visibleColumnStopIndex;
+
+                onItemsRendered({
+                  overscanStartIndex: startIndex,
+                  overscanStopIndex: stopIndex,
+                  visibleStartIndex: startIndex,
+                  visibleStopIndex: stopIndex,
+                });
+              }}
+            >
+              {GridItemComponent}
+            </Grid>
+          )}
+        </InfiniteLoader>
+
+        <div
+          className="h-16 flex justify-center items-center overflow-hidden"
+          style={{
+            pointerEvents: "none",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          {isNextPageLoading && (
+            <div className="flex items-center space-x-3">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              <span className="text-muted-foreground text-sm">
+                Loading more items...
+              </span>
+            </div>
+          )}
+
+          {!hasNextPage && items.length > 0 && !isNextPageLoading && (
+            <span className="text-muted-foreground text-sm">
+              No more items to load
+            </span>
+          )}
         </div>
       </div>
     );
-  }
-
-  return (
-    <div
-      className={`w-full overflow-hidden ${className}`}
-      style={{
-        touchAction: "pan-y",
-        WebkitOverflowScrolling: "touch",
-        position: "relative",
-      }}
-    >
-      <InfiniteLoader
-        threshold={15}
-        isItemLoaded={isItemLoaded}
-        loadMoreItems={loadNextPage}
-        itemCount={hasNextPage ? items.length + 1 : items.length}
-      >
-        {({ onItemsRendered, ref }) => (
-          <Grid
-            ref={(grid) => {
-              gridRef.current = grid;
-              if (typeof ref === "function") {
-                ref(grid);
-              } else if (ref) {
-                // @ts-expect-error current is typed as never, will fix it later
-                ref.current = grid;
-              }
-            }}
-            style={{
-              overflowX: "hidden",
-              width: "100%",
-              overscrollBehavior: "contain", // Prevent scroll chaining
-              WebkitOverflowScrolling: "touch",
-              msOverflowStyle: "none", // Hide scrollbar in IE/Edge
-              scrollbarWidth: "none", // Firefox
-            }}
-            className="custom-scrollbar overflow-y-auto overflow-x-hidden"
-            columnCount={columnCount}
-            columnWidth={itemWidth + gap}
-            height={availableHeight}
-            rowCount={rowCount}
-            rowHeight={itemWidth + gap} // Default square aspect ratio
-            width={containerWidth}
-            itemData={gridItemData}
-            onItemsRendered={({
-              visibleColumnStartIndex,
-              visibleColumnStopIndex,
-              visibleRowStartIndex,
-              visibleRowStopIndex,
-            }) => {
-              const startIndex =
-                visibleRowStartIndex * columnCount + visibleColumnStartIndex;
-              const stopIndex =
-                visibleRowStopIndex * columnCount + visibleColumnStopIndex;
-
-              onItemsRendered({
-                overscanStartIndex: startIndex,
-                overscanStopIndex: stopIndex,
-                visibleStartIndex: startIndex,
-                visibleStopIndex: stopIndex,
-              });
-            }}
-          >
-            {GridItemComponent}
-          </Grid>
-        )}
-      </InfiniteLoader>
-
-      <div
-        className="h-16 flex justify-center items-center overflow-hidden"
-        style={{
-          pointerEvents: "none",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        {isNextPageLoading && (
-          <div className="flex items-center space-x-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-            <span className="text-muted-foreground text-sm">
-              Loading more items...
-            </span>
-          </div>
-        )}
-
-        {!hasNextPage && items.length > 0 && !isNextPageLoading && (
-          <span className="text-muted-foreground text-sm">
-            No more items to load
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
+  },
+);

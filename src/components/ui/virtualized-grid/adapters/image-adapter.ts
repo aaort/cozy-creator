@@ -7,19 +7,24 @@ import type { GridItem } from "../virtualized-grid";
  * @param index Optional index to use for generating an ID if not present
  * @returns A GridItem representation of the image
  */
-export function imageToGridItem(
-  image: ImageData,
-  index?: number,
-): GridItem {
+export function imageToGridItem(image: ImageData, index?: number): GridItem {
   return {
     id: `image-${index ?? Math.random().toString(36).substring(2, 9)}`,
     url: image.url,
     type: "image",
-    // You can extract additional metadata from image.meta if needed
-    title: image.meta?.model ? `Model: ${image.meta.model}` : undefined,
-    subtitle: "Click to view full size",
-    // Default to square aspect ratio if not specified
-    aspectRatio: 1,
+    width: image.meta?.width,
+    height: image.meta?.height,
+    title:
+      image.meta?.title ||
+      (image.meta?.model ? `Model: ${image.meta.model}` : undefined),
+    subtitle: image.meta?.alt || "Click to view full size",
+    // Use the actual aspect ratio from metadata, or calculate it from width/height if available
+    aspectRatio:
+      typeof image.meta?.aspectRatio === "number"
+        ? image.meta.aspectRatio
+        : image.meta?.width && image.meta?.height
+          ? image.meta.width / image.meta.height
+          : 1,
   };
 }
 

@@ -26,10 +26,18 @@ export const ImageRenderer: React.FC<ImageRendererProps> = ({
     }
   };
 
+  // Determine the correct styling for maintaining aspect ratio
+  const imgStyle = {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover" as const,
+  };
+
   return (
     <div
       className="relative w-full h-full overflow-hidden rounded-lg group cursor-pointer hover:shadow-lg transition-all duration-300"
       onClick={handleClick}
+      style={{ aspectRatio: item.aspectRatio }}
     >
       {/* Placeholder shown while image loads */}
       {!imageLoaded && <ImagePlaceholder />}
@@ -37,8 +45,9 @@ export const ImageRenderer: React.FC<ImageRendererProps> = ({
       <img
         src={item.url}
         loading="lazy"
+        style={imgStyle}
         className={`
-          absolute inset-0 w-full h-full object-cover
+          absolute inset-0
           transition-all duration-300 ease-in-out
           group-hover:scale-105
           ${imageLoaded ? "opacity-100" : "opacity-0"}
