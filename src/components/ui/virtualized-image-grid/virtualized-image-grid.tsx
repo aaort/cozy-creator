@@ -99,9 +99,6 @@ export function VirtualizedImageGrid({
   const containerWidth = useContainerWidth(containerRef);
   const availableHeight = useAvailableHeight();
 
-  // Initialize items
-  useEffect(() => {}, [baseImageUrl, initialItemCount]);
-
   // Reset grid when columns change
   useEffect(() => {
     if (gridRef.current) {
