@@ -34,7 +34,5 @@ export const useAvailableHeight = () => {
     };
   }, []);
 
-  console.log("availableHeight", availableHeight);
-
   return availableHeight;
 };
