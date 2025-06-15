@@ -13,9 +13,6 @@ export const useAvailableHeight = () => {
       // Calculate available height by subtracting fixed header and footer heights
       const calculatedHeight = Math.max(400, windowHeight - HEADER_HEIGHT);
 
-      console.log("windowHeight", windowHeight);
-      console.log("HEADER_HEIGHT", HEADER_HEIGHT);
-
       setAvailableHeight(calculatedHeight);
     };
 
