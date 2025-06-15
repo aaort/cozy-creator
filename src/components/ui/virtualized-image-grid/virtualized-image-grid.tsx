@@ -1,3 +1,4 @@
+import { IMAGE_HEIGHT, IMAGE_WIDTH } from "@/constants/data";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FixedSizeGrid as Grid, type GridOnScrollProps } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
@@ -111,12 +112,11 @@ export function VirtualizedImageGrid({
   const containerWidth = useContainerWidth(containerRef);
   const availableHeight = useAvailableHeight();
 
-  console.log("");
-
   // Initialize items
   useEffect(() => {
     const initialItems = Array.from({ length: initialItemCount }).map(
-      (_, index) => `${baseImageUrl}${index}/1000/1000.jpg`,
+      (_, index) =>
+        `${baseImageUrl}${index}/${IMAGE_WIDTH}/${IMAGE_HEIGHT}.jpg`,
     );
     setItems(initialItems);
   }, [baseImageUrl, initialItemCount]);
@@ -138,7 +138,8 @@ export function VirtualizedImageGrid({
 
     const currentLength = items.length;
     const newItems = Array.from({ length: itemsPerPage }).map(
-      (_, index) => `${baseImageUrl}${currentLength + index}/1000/1000.jpg`,
+      (_, index) =>
+        `${baseImageUrl}${currentLength + index}/${IMAGE_WIDTH}/${IMAGE_HEIGHT}.jpg`,
     );
 
     setItems((prevItems) => [...prevItems, ...newItems]);
