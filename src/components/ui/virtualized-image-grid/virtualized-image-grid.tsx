@@ -1,69 +1,17 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { FixedSizeGrid as Grid, type GridOnScrollProps } from "react-window";
-import InfiniteLoader from "react-window-infinite-loader";
-import { ImagePlaceholder } from "./atoms/image-placeholder";
+import { useCallback, useEffect, useRef } from "react";
+import type { GridOnScrollProps } from "react-window";
+import { imagesToGridItems } from "../virtualized-grid/adapters/image-adapter";
+import { ImageRenderer } from "../virtualized-grid/renderers";
+import type { GridItem } from "../virtualized-grid/virtualized-grid";
+import { VirtualizedGrid } from "../virtualized-grid/virtualized-grid";
 import { useResponsiveColumns } from "./hooks/columns";
 import { useAvailableHeight } from "./hooks/height";
-import { useImages, type ImageData } from "./hooks/images";
+import { useImages } from "./hooks/images";
 import { useContainerWidth } from "./hooks/width";
-
-interface GridItemData {
-  gap: number;
-  itemWidth: number;
-  items: ImageData[];
-  columnCount: number;
-}
-
-const GridItem: React.FC<{
-  rowIndex: number;
-  data: GridItemData;
-  columnIndex: number;
-  style: React.CSSProperties;
-}> = ({ columnIndex, rowIndex, style, data }) => {
-  const { columnCount, items: images, itemWidth, gap } = data;
-  const itemIndex = rowIndex * columnCount + columnIndex;
-  const [imageLoaded, setImageLoaded] = useState(false);
-
-  if (itemIndex >= images.length) return null;
-
-  const imageUrl = images[itemIndex].url;
-
-  return (
-    <div
-      style={{
-        ...style,
-        left: (style.left as number) + gap / 2,
-        top: (style.top as number) + gap / 2,
-        width: itemWidth,
-        height: itemWidth, // Square aspect ratio
-      }}
-    >
-      <div className="relative w-full h-full overflow-hidden rounded-lg group cursor-pointer hover:shadow-lg transition-all duration-300">
-        {/* Placeholder shown while image loads */}
-        {!imageLoaded && <ImagePlaceholder />}
-
-        <img
-          src={imageUrl}
-          loading="lazy"
-          className={`
-            absolute inset-0 w-full h-full object-cover
-            transition-all duration-300 ease-in-out
-            group-hover:scale-105
-            ${imageLoaded ? "opacity-100" : "opacity-0"}
-          `}
-          onLoad={() => setImageLoaded(true)}
-        />
-
-        {/* Subtle overlay on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-      </div>
-    </div>
-  );
-};
 
 interface VirtualizedImageGridProps {
   gap?: number;
-  itemHeight: number;
+  itemHeight?: number; // This is kept for backward compatibility but won't be used
   className?: string;
   baseImageUrl: string;
   itemsPerPage?: number;
@@ -79,7 +27,6 @@ export function VirtualizedImageGrid({
   onGridScroll,
   className = "",
 }: VirtualizedImageGridProps) {
-  const gridRef = useRef<Grid>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -98,29 +45,14 @@ export function VirtualizedImageGrid({
   const containerWidth = useContainerWidth(containerRef);
   const availableHeight = useAvailableHeight();
 
-  // Reset grid when columns change
-  useEffect(() => {
-    if (gridRef.current) {
-      gridRef.current.setState({ columnIndex: 0, rowIndex: 0 });
-    }
-  }, [columns]);
+  // Convert the images to GridItem format
+  const gridItems: GridItem[] = useCallback(() => {
+    return imagesToGridItems(images);
+  }, [images])();
 
-  const isItemLoaded = useCallback(
-    (index: number) => !!images[index],
-    [images],
-  );
-
-  const itemWidth = Math.floor(
-    (containerWidth - gap * (columns + 1)) / columns,
-  );
-  const rowCount = Math.ceil(images.length / columns);
-  const columnCount = columns;
-
-  const gridItemData: GridItemData = {
-    gap,
-    itemWidth,
-    columnCount,
-    items: images,
+  // Render the image component
+  const renderImage = (item: GridItem, width: number, isLoaded: boolean) => {
+    return <ImageRenderer item={item} width={width} isLoaded={isLoaded} />;
   };
 
   if (!containerWidth) {
@@ -141,72 +73,18 @@ export function VirtualizedImageGrid({
 
   return (
     <div ref={containerRef} className={`w-full ${className}`}>
-      <InfiniteLoader
-        threshold={15}
-        isItemLoaded={isItemLoaded}
-        loadMoreItems={loadNextPage}
-        itemCount={hasNextPage ? images.length + 1 : images.length}
-      >
-        {({ onItemsRendered, ref }) => (
-          <Grid
-            ref={(grid) => {
-              gridRef.current = grid;
-              if (typeof ref === "function") {
-                ref(grid);
-              } else if (ref) {
-                // @ts-expect-error current is typed as never, will fix it later
-                ref.current = grid;
-              }
-            }}
-            onScroll={onGridScroll}
-            className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ml-4"
-            columnCount={columnCount}
-            columnWidth={itemWidth + gap}
-            height={availableHeight}
-            rowCount={rowCount}
-            rowHeight={itemWidth + gap} // Square aspect ratio
-            width={containerWidth}
-            itemData={gridItemData}
-            onItemsRendered={({
-              visibleColumnStartIndex,
-              visibleColumnStopIndex,
-              visibleRowStartIndex,
-              visibleRowStopIndex,
-            }) => {
-              const startIndex =
-                visibleRowStartIndex * columnCount + visibleColumnStartIndex;
-              const stopIndex =
-                visibleRowStopIndex * columnCount + visibleColumnStopIndex;
-
-              onItemsRendered({
-                overscanStartIndex: startIndex,
-                overscanStopIndex: stopIndex,
-                visibleStartIndex: startIndex,
-                visibleStopIndex: stopIndex,
-              });
-            }}
-          >
-            {GridItem}
-          </Grid>
-        )}
-      </InfiniteLoader>
-
-      <div className="h-16 flex justify-center items-center">
-        {isNextPageLoading && (
-          <div className="flex items-center space-x-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-            <span className="text-muted-foreground text-sm">
-              Loading more images...
-            </span>
-          </div>
-        )}
-
-        {!hasNextPage && images.length > 0 && !isNextPageLoading && (
-          <span className="text-muted-foreground text-sm">
-            No more images to load
-          </span>
-        )}
-      </div>
+      <VirtualizedGrid
+        items={gridItems}
+        renderItem={renderImage}
+        hasNextPage={hasNextPage}
+        isNextPageLoading={isNextPageLoading}
+        loadNextPage={loadNextPage}
+        gap={gap}
+        onGridScroll={onGridScroll}
+        columns={columns}
+        availableHeight={availableHeight}
+        containerWidth={containerWidth}
+      />
     </div>
   );
 }
