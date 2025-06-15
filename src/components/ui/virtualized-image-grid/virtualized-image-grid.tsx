@@ -201,7 +201,7 @@ export function VirtualizedImageGrid({
               }
             }}
             onScroll={onGridScroll}
-            className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+            className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ml-4"
             columnCount={columnCount}
             columnWidth={itemWidth + gap}
             height={availableHeight}
