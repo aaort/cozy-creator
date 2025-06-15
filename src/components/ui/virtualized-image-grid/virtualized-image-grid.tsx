@@ -52,7 +52,6 @@ const GridItem: React.FC<{
             ${imageLoaded ? "opacity-100" : "opacity-0"}
           `}
           onLoad={() => setImageLoaded(true)}
-          onError={() => setImageLoaded(true)} // Show placeholder on error too
         />
 
         {/* Subtle overlay on hover */}

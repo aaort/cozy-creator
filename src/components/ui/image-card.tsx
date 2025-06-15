@@ -146,4 +146,3 @@ function ImageCard({
 
 export { ImageCard };
 export type { ImageCardProps };
-
