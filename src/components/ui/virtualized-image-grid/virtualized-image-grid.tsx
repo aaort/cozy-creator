@@ -14,7 +14,6 @@ interface GridItemData {
   columnCount: number;
 }
 
-// Pretty placeholder component
 const ImagePlaceholder: React.FC = () => (
   <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-lg flex items-center justify-center">
     <div className="flex flex-col items-center space-y-2 text-gray-400 dark:text-gray-500">

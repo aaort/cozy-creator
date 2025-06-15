@@ -1,6 +1,7 @@
-import { Logo } from "@/components/ui/logo";
-import { ModeToggle } from "@/components/ui/mode-toggle";
-import { HEADER_HEIGHT } from "@/constants/layout";
+import { cn } from "@/lib/utils";
+import { Logo } from "@components/ui/logo";
+import { ModeToggle } from "@components/ui/mode-toggle";
+import { HEADER_HEIGHT } from "@constants/layout";
 import type { ComponentProps } from "react";
 
 interface HeaderProps extends ComponentProps<"header"> {}
@@ -9,11 +10,10 @@ function Header({ className, ...props }: HeaderProps) {
   return (
     <header
       style={{ height: HEADER_HEIGHT }}
-      className={`
-        sticky px-4 sm:px-6 lg:px-8 top-0 z-50 w-full border-b border-border/40
-        bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60
-        ${className || ""}
-      `.trim()}
+      className={cn(
+        "absolute px-4 sm:px-6 lg:px-8 top-0 z-50 w-full bg-red-200/20 backdrop-blur-md",
+        className,
+      )}
       {...props}
     >
       <div className="flex h-14 items-center relative z-10">
