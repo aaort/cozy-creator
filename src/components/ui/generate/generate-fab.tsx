@@ -117,7 +117,7 @@ export function GenerateFab() {
           onClick={openModal}
           size="lg"
           className={cn(
-            "h-14 w-14 rounded-full shadow-lg hover:shadow-xl",
+            "h-12 w-12 rounded-full shadow-lg hover:shadow-xl",
             "bg-primary hover:bg-primary/90",
             "generate-fab-button",
             "hover:scale-110 active:scale-95",
@@ -128,8 +128,8 @@ export function GenerateFab() {
           aria-label="Generate Image (Cmd+K)"
         >
           <div className="relative">
-            <Plus className="h-6 w-6 transition-transform duration-300 group-hover:rotate-90" />
-            <Sparkles className="absolute -top-1 -right-1 h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <Plus className="h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
+            <Sparkles className="absolute -top-1 -right-1 h-2.5 w-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
         </Button>
       </div>

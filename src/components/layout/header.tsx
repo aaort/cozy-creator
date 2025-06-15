@@ -41,7 +41,7 @@ function Header({ className, ...props }: HeaderProps) {
         <nav className="flex items-center gap-1 text-sm lg:gap-2">
           <Link
             to="/"
-            className={`px-3 py-2 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 font-medium ${
+            className={`px-3 py-1 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 font-medium ${
               isActive("/")
                 ? "text-foreground bg-accent/30"
                 : "text-foreground/70"
@@ -51,7 +51,7 @@ function Header({ className, ...props }: HeaderProps) {
           </Link>
           <Link
             to="/videos"
-            className={`px-3 py-2 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 font-medium ${
+            className={`px-3 py-1 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 font-medium ${
               isActive("/videos")
                 ? "text-foreground bg-accent/30"
                 : "text-foreground/70"
@@ -96,7 +96,7 @@ function Header({ className, ...props }: HeaderProps) {
               <ModeToggle />
             </div>
 
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2 py-1">
               <LogIn className="h-4 w-4" />
               Sign In
             </Button>
