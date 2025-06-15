@@ -233,7 +233,6 @@ export function VirtualizedImageGrid({
         )}
       </InfiniteLoader>
 
-      {/* Fixed height loading indicator to prevent layout shift */}
       <div className="h-16 flex justify-center items-center">
         {isNextPageLoading && (
           <div className="flex items-center space-x-3">
