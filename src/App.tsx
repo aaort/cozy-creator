@@ -1,4 +1,5 @@
 import { Header } from "@components/layout/header";
+import { GenerateFab } from "@ui/generate/generate-fab";
 import { Route, Routes } from "react-router-dom";
 import { LiveFeed, Videos } from "./pages";
 
@@ -11,6 +12,8 @@ function App() {
         <Route path="/" element={<LiveFeed />} />
         <Route path="/videos" element={<Videos />} />
       </Routes>
+
+      <GenerateFab />
     </div>
   );
 }

@@ -1,0 +1,146 @@
+/* Fade in animation for modal backdrop */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Scale up and fade in animation for modal content */
+@keyframes scale-up-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Fade out animation for modal backdrop */
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Scale down and fade out animation for modal content */
+@keyframes scale-down-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+}
+
+/* Animation classes */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+.animate-fade-out {
+  animation: fade-out 0.2s ease-in forwards;
+}
+
+.animate-scale-up-fade-in {
+  animation: scale-up-fade-in 0.3s ease-out forwards;
+}
+
+.animate-scale-down-fade-out {
+  animation: scale-down-fade-out 0.2s ease-in forwards;
+}
+
+/* Floating action button pulse effect */
+@keyframes fab-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+.fab-pulse:hover {
+  animation: fab-pulse 1.5s infinite;
+}
+
+/* Floating action button entrance animation */
+@keyframes fab-entrance {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.fab-entrance {
+  animation: fab-entrance 0.5s ease-out forwards;
+}
+
+/* Loading spinner for generate button */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Smooth transitions */
+.generate-fab-modal-backdrop {
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.generate-fab-modal-content {
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Input focus ring animation */
+.generate-fab-input:focus {
+  transition: all 0.2s ease-out;
+}
+
+/* Button hover effects */
+.generate-fab-button {
+  transition:
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Keyboard shortcut styling */
+.generate-fab-kbd {
+  border: 1px solid hsl(var(--border));
+  border-bottom: 2px solid hsl(var(--border));
+  box-shadow: 0 1px 0 hsl(var(--border));
+  transition: all 0.1s ease;
+}
+
+.generate-fab-kbd:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
