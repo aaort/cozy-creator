@@ -1,17 +1,15 @@
-import { IMAGE_HEIGHT, IMAGE_WIDTH } from "@/constants/data";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FixedSizeGrid as Grid, type GridOnScrollProps } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
 import { useResponsiveColumns } from "./hooks/columns";
 import { useAvailableHeight } from "./hooks/height";
+import { useImages, type ImageData } from "./hooks/images";
 import { useContainerWidth } from "./hooks/width";
-
-const MAX_IMAGE_AMOUNT = 1000;
 
 interface GridItemData {
   gap: number;
-  items: string[];
   itemWidth: number;
+  items: ImageData[];
   columnCount: number;
 }
 
@@ -42,13 +40,13 @@ const GridItem: React.FC<{
   columnIndex: number;
   style: React.CSSProperties;
 }> = ({ columnIndex, rowIndex, style, data }) => {
-  const { columnCount, items, itemWidth, gap } = data;
+  const { columnCount, items: images, itemWidth, gap } = data;
   const itemIndex = rowIndex * columnCount + columnIndex;
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  if (itemIndex >= items.length) return null;
+  if (itemIndex >= images.length) return null;
 
-  const imageUrl = items[itemIndex];
+  const imageUrl = images[itemIndex].url;
 
   return (
     <div
@@ -103,23 +101,26 @@ export function VirtualizedImageGrid({
   className = "",
 }: VirtualizedImageGridProps) {
   const gridRef = useRef<Grid>(null);
-  const [items, setItems] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [hasNextPage, setHasNextPage] = useState(true);
-  const [isNextPageLoading, setIsNextPageLoading] = useState(false);
+
+  const {
+    images,
+    hasNextPage,
+    loadNextPage,
+    loadInitialImages,
+    isNextPageLoading,
+  } = useImages({ initialItemCount, itemsPerPage, baseImageUrl });
+
+  useEffect(() => {
+    loadInitialImages();
+  }, [loadInitialImages]);
 
   const columns = useResponsiveColumns();
   const containerWidth = useContainerWidth(containerRef);
   const availableHeight = useAvailableHeight();
 
   // Initialize items
-  useEffect(() => {
-    const initialItems = Array.from({ length: initialItemCount }).map(
-      (_, index) =>
-        `${baseImageUrl}${index}/${IMAGE_WIDTH}/${IMAGE_HEIGHT}.jpg`,
-    );
-    setItems(initialItems);
-  }, [baseImageUrl, initialItemCount]);
+  useEffect(() => {}, [baseImageUrl, initialItemCount]);
 
   // Reset grid when columns change
   useEffect(() => {
@@ -128,42 +129,24 @@ export function VirtualizedImageGrid({
     }
   }, [columns]);
 
-  const loadNextPage = useCallback(async () => {
-    if (isNextPageLoading) return;
+  const isItemLoaded = useCallback(
+    (index: number) => !!images[index],
+    [images],
+  );
 
-    setIsNextPageLoading(true);
-
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const currentLength = items.length;
-    const newItems = Array.from({ length: itemsPerPage }).map(
-      (_, index) =>
-        `${baseImageUrl}${currentLength + index}/${IMAGE_WIDTH}/${IMAGE_HEIGHT}.jpg`,
-    );
-
-    setItems((prevItems) => [...prevItems, ...newItems]);
-    setIsNextPageLoading(false);
-
-    // Simulate ending pagination after reaching max
-    if (currentLength + itemsPerPage >= MAX_IMAGE_AMOUNT) {
-      setHasNextPage(false);
-    }
-  }, [baseImageUrl, items.length, itemsPerPage, isNextPageLoading]);
-
-  const isItemLoaded = useCallback((index: number) => !!items[index], [items]);
+  console.log("images", images);
 
   const itemWidth = Math.floor(
     (containerWidth - gap * (columns + 1)) / columns,
   );
-  const rowCount = Math.ceil(items.length / columns);
+  const rowCount = Math.ceil(images.length / columns);
   const columnCount = columns;
 
   const gridItemData: GridItemData = {
-    columnCount,
-    items,
-    itemWidth,
     gap,
+    itemWidth,
+    columnCount,
+    items: images,
   };
 
   if (!containerWidth) {
@@ -185,10 +168,10 @@ export function VirtualizedImageGrid({
   return (
     <div ref={containerRef} className={`w-full ${className}`}>
       <InfiniteLoader
-        isItemLoaded={isItemLoaded}
-        itemCount={hasNextPage ? items.length + 1 : items.length}
-        loadMoreItems={loadNextPage}
         threshold={5}
+        isItemLoaded={isItemLoaded}
+        loadMoreItems={loadNextPage}
+        itemCount={hasNextPage ? images.length + 1 : images.length}
       >
         {({ onItemsRendered, ref }) => (
           <Grid
@@ -244,7 +227,7 @@ export function VirtualizedImageGrid({
           </div>
         )}
 
-        {!hasNextPage && items.length > 0 && !isNextPageLoading && (
+        {!hasNextPage && images.length > 0 && !isNextPageLoading && (
           <span className="text-muted-foreground text-sm">
             No more images to load
           </span>
