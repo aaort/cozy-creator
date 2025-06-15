@@ -3,10 +3,18 @@ import { Logo } from "@components/ui/logo";
 import { ModeToggle } from "@components/ui/mode-toggle";
 import { HEADER_HEIGHT } from "@constants/layout";
 import type { ComponentProps } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 interface HeaderProps extends ComponentProps<"header"> {}
 
 function Header({ className, ...props }: HeaderProps) {
+  const location = useLocation();
+
+  const isActive = (path: string) => {
+    if (path === "/" && location.pathname === "/") return true;
+    if (path !== "/" && location.pathname.startsWith(path)) return true;
+    return false;
+  };
   return (
     <header
       style={{ height: HEADER_HEIGHT }}
@@ -29,30 +37,26 @@ function Header({ className, ...props }: HeaderProps) {
 
         {/* Navigation */}
         <nav className="flex items-center gap-1 text-sm lg:gap-2">
-          <a
-            href="/"
-            className="px-3 py-2 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 text-foreground/70 font-medium"
+          <Link
+            to="/"
+            className={`px-3 py-2 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 font-medium ${
+              isActive("/")
+                ? "text-foreground bg-accent/30"
+                : "text-foreground/70"
+            }`}
           >
-            Home
-          </a>
-          <a
-            href="/about"
-            className="px-3 py-2 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 text-foreground/70 font-medium"
+            Live Feed
+          </Link>
+          <Link
+            to="/videos"
+            className={`px-3 py-2 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 font-medium ${
+              isActive("/videos")
+                ? "text-foreground bg-accent/30"
+                : "text-foreground/70"
+            }`}
           >
-            About
-          </a>
-          <a
-            href="/projects"
-            className="px-3 py-2 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 text-foreground/70 font-medium"
-          >
-            Projects
-          </a>
-          <a
-            href="/contact"
-            className="px-3 py-2 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 text-foreground/70 font-medium"
-          >
-            Contact
-          </a>
+            Videos
+          </Link>
         </nav>
 
         {/* Spacer */}

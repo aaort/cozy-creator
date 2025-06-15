@@ -1,33 +1,16 @@
 import { Header } from "@components/layout/header";
-import { VirtualizedImageGrid } from "@components/ui/virtualized-image-grid";
-import { STATIC_IMAGE_URL } from "@constants/data";
-import { useState } from "react";
-import type { GridOnScrollProps } from "react-window";
-import { HEADER_HEIGHT } from "./constants/layout";
+import { Route, Routes } from "react-router-dom";
+import { LiveFeed, Videos } from "./pages";
 
 function App() {
-  const [space, setSpace] = useState<number>(HEADER_HEIGHT);
-
-  const handleGridScroll = (props: GridOnScrollProps) => {
-    setSpace(Math.max(HEADER_HEIGHT - props.scrollTop, 0));
-  };
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
 
-      <main className="px-2" style={{ paddingTop: space }}>
-        <VirtualizedImageGrid
-          gap={36}
-          itemHeight={680}
-          itemsPerPage={40}
-          initialItemCount={40}
-          onGridScroll={handleGridScroll}
-          baseImageUrl={STATIC_IMAGE_URL}
-        />
-      </main>
-
-      {/* <Footer /> */}
+      <Routes>
+        <Route path="/" element={<LiveFeed />} />
+        <Route path="/videos" element={<Videos />} />
+      </Routes>
     </div>
   );
 }
