@@ -124,7 +124,7 @@ export function VirtualizedGrid({
 
   if (!containerWidth) {
     return (
-      <div className={`w-full ${className}`}>
+      <div className={`w-full overflow-hidden ${className}`}>
         <div
           className="flex justify-center items-center"
           style={{ height: availableHeight }}
@@ -139,7 +139,14 @@ export function VirtualizedGrid({
   }
 
   return (
-    <div className={`w-full ${className}`}>
+    <div
+      className={`w-full overflow-hidden ${className}`}
+      style={{
+        touchAction: "pan-y",
+        WebkitOverflowScrolling: "touch",
+        position: "relative",
+      }}
+    >
       <InfiniteLoader
         threshold={15}
         isItemLoaded={isItemLoaded}
@@ -157,8 +164,15 @@ export function VirtualizedGrid({
                 ref.current = grid;
               }
             }}
-            onScroll={onGridScroll}
-            className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ml-4"
+            style={{
+              overflowX: "hidden",
+              width: "100%",
+              overscrollBehavior: "contain", // Prevent scroll chaining
+              WebkitOverflowScrolling: "touch",
+              msOverflowStyle: "none", // Hide scrollbar in IE/Edge
+              scrollbarWidth: "none", // Firefox
+            }}
+            className="custom-scrollbar overflow-y-auto overflow-x-hidden"
             columnCount={columnCount}
             columnWidth={itemWidth + gap}
             height={availableHeight}
@@ -190,7 +204,14 @@ export function VirtualizedGrid({
         )}
       </InfiniteLoader>
 
-      <div className="h-16 flex justify-center items-center">
+      <div
+        className="h-16 flex justify-center items-center overflow-hidden"
+        style={{
+          pointerEvents: "none",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
         {isNextPageLoading && (
           <div className="flex items-center space-x-3">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
