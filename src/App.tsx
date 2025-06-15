@@ -19,9 +19,8 @@ function App() {
       <main className="px-2" style={{ paddingTop: space }}>
         <VirtualizedImageGrid
           gap={36}
-          itemHeight={280}
+          itemHeight={680}
           itemsPerPage={40}
-          className="mx-auto"
           initialItemCount={40}
           onGridScroll={handleGridScroll}
           baseImageUrl={STATIC_IMAGE_URL}
