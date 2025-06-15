@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { FixedSizeGrid as Grid } from "react-window";
+import { FixedSizeGrid as Grid, type GridOnScrollProps } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
 import { useResponsiveColumns } from "./hooks/columns";
 import { useAvailableHeight } from "./hooks/height";
@@ -90,6 +90,7 @@ interface VirtualizedImageGridProps {
   baseImageUrl: string;
   itemsPerPage?: number;
   initialItemCount?: number;
+  onGridScroll?: (props: GridOnScrollProps) => void;
 }
 
 export function VirtualizedImageGrid({
@@ -97,6 +98,7 @@ export function VirtualizedImageGrid({
   initialItemCount = 40,
   itemsPerPage = 20,
   gap = 16,
+  onGridScroll,
   className = "",
 }: VirtualizedImageGridProps) {
   const gridRef = useRef<Grid>(null);
@@ -198,6 +200,7 @@ export function VirtualizedImageGrid({
                 ref.current = grid;
               }
             }}
+            onScroll={onGridScroll}
             className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
             columnCount={columnCount}
             columnWidth={itemWidth + gap}
