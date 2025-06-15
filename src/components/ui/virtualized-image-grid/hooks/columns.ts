@@ -6,10 +6,8 @@ export const useResponsiveColumns = () => {
 
   useEffect(() => {
     const updateColumns = () => {
-      if (window.matchMedia("(min-width: 1536px)").matches) {
-        setColumns(4); // 2xl
-      } else if (window.matchMedia("(min-width: 1280px)").matches) {
-        setColumns(3); // xl
+      if (window.matchMedia("(min-width: 1280px)").matches) {
+        setColumns(3); // xl and above - max 3 columns
       } else if (window.matchMedia("(min-width: 640px)").matches) {
         setColumns(2); // lg/md/sm
       } else {

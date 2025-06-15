@@ -1,5 +1,5 @@
-import { MediaModal, useMediaModal } from "@/components/ui/media-modal";
-import type { GridItem } from "@/components/ui/virtualized-grid";
+import { MediaModal, useMediaModal } from "@components/ui/media-modal";
+import type { GridItem } from "@components/ui/virtualized-grid";
 import {
   VideoRenderer,
   VirtualizedGrid,
@@ -8,7 +8,7 @@ import {
   useResponsiveColumns,
   useScrollOffset,
   useVideos,
-} from "@/components/ui/virtualized-grid";
+} from "@components/ui/virtualized-grid";
 import { HEADER_HEIGHT } from "@constants/layout";
 import videoMetadata from "@data/video-metadata.json";
 import { useCallback, useEffect, useRef } from "react";
@@ -28,7 +28,13 @@ const initialVideos: GridItem[] = videoMetadata.videos.map((vid, index) => ({
 export function Videos() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [space, updateSpace] = useScrollOffset(HEADER_HEIGHT);
-  const columns = useResponsiveColumns();
+  const columns = useResponsiveColumns({
+    base: 1,
+    sm: 2,
+    md: 3,
+    lg: 3,
+    xl: 3,
+  });
   const containerWidth = useContainerWidth(
     containerRef as React.RefObject<HTMLElement>,
   );
