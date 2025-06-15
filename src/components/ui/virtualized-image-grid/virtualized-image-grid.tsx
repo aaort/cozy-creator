@@ -143,7 +143,7 @@ export function VirtualizedImageGrid({
   return (
     <div ref={containerRef} className={`w-full ${className}`}>
       <InfiniteLoader
-        threshold={5}
+        threshold={15}
         isItemLoaded={isItemLoaded}
         loadMoreItems={loadNextPage}
         itemCount={hasNextPage ? images.length + 1 : images.length}
