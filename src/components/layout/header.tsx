@@ -11,7 +11,7 @@ function Header({ className, ...props }: HeaderProps) {
     <header
       style={{ height: HEADER_HEIGHT }}
       className={cn(
-        "absolute px-4 sm:px-6 lg:px-8 top-0 z-50 w-full bg-red-200/20 backdrop-blur-md",
+        "absolute px-4 sm:px-6 lg:px-8 top-0 z-50 w-full bg-red-200/20 backdrop-blur-md border-1 border-b-primary-200",
         className,
       )}
       {...props}
