@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { GlassModalBackdrop } from "../modal-backdrop";
 import type { GridItem } from "../virtualized-grid/virtualized-grid";
 import "./animations.css";
 
@@ -105,12 +106,7 @@ export function MediaModal({
     }
   }, [currentItem, isOpen, isPlaying]);
 
-  // Handle clicks outside the media content to close the modal
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      onClose();
-    }
-  };
+  // Note: handleBackdropClick is now handled by GlassModalBackdrop
 
   // Handle video click
   const handleVideoClick = useCallback(
@@ -126,15 +122,14 @@ export function MediaModal({
   if (!isOpen || !currentItem) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm modal-backdrop"
-      onClick={handleBackdropClick}
+    <GlassModalBackdrop
+      isOpen={isOpen}
+      onClose={onClose}
+      className="generate-fab-modal-backdrop"
+      contentClassName="max-w-7xl max-h-[90vh] overflow-hidden rounded-lg modal-content"
     >
       {/* Modal Content */}
-      <div
-        ref={modalRef}
-        className="relative max-w-7xl max-h-[90vh] overflow-hidden rounded-lg modal-content"
-      >
+      <div ref={modalRef} className="relative">
         {/* Media Content */}
         <div className="relative media-container">
           {/* Loading Indicator */}
@@ -321,6 +316,6 @@ export function MediaModal({
           </div>
         )}
       </div>
-    </div>
+    </GlassModalBackdrop>
   );
 }

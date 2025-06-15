@@ -69,32 +69,19 @@ export const ImageRenderer: React.FC<ImageRendererProps> = ({
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
 
       {/* Display metadata on hover */}
-      {(item.title || item.subtitle || item.width || item.height) && (
-        <div className="absolute inset-0 flex flex-col justify-between p-3">
-          {/* Top metadata - dimensions */}
-          {(item.width || item.height) && (
-            <div className="self-end">
-              <div className="bg-black/70 backdrop-blur-sm rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <span className="text-white text-xs font-medium">
-                  {item.width} × {item.height}
-                </span>
-              </div>
-            </div>
-          )}
-
+      {(item.title || item.subtitle) && (
+        <div className="absolute inset-0 flex flex-col justify-end p-3">
           {/* Bottom metadata - title/subtitle */}
-          {(item.title || item.subtitle) && (
-            <div className="bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-lg p-2 -m-3 mt-auto">
-              {item.title && (
-                <p className="text-white text-sm font-semibold truncate">
-                  {item.title}
-                </p>
-              )}
-              {item.subtitle && (
-                <p className="text-white/90 text-xs mt-1">{item.subtitle}</p>
-              )}
-            </div>
-          )}
+          <div className="bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-lg p-2 -m-3">
+            {item.title && (
+              <p className="text-white text-sm font-semibold truncate">
+                {item.title}
+              </p>
+            )}
+            {item.subtitle && (
+              <p className="text-white/90 text-xs mt-1">{item.subtitle}</p>
+            )}
+          </div>
         </div>
       )}
     </div>

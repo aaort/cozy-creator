@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@components/ui/button";
+import { GlassModalBackdrop } from "@components/ui/modal-backdrop";
 import { Plus, Sparkles } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./generate-fab.css";
@@ -99,15 +100,7 @@ export function GenerateFab() {
     }
   }, [isModalOpen]);
 
-  // Handle backdrop click
-  const handleBackdropClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        closeModal();
-      }
-    },
-    [closeModal],
-  );
+  // Note: handleBackdropClick is now handled by GlassModalBackdrop
 
   return (
     <>
@@ -135,109 +128,104 @@ export function GenerateFab() {
       </div>
 
       {/* Modal */}
-      {isModalOpen && (
-        <div
-          className={cn(
-            "fixed inset-0 z-50 flex items-center justify-center",
-            "bg-background/80 backdrop-blur-xl",
-            "generate-fab-modal-backdrop",
-            isModalClosing ? "animate-fade-out" : "animate-fade-in",
-          )}
-          onClick={handleBackdropClick}
-        >
-          <div
-            ref={modalRef}
-            className={cn(
-              "relative w-full max-w-md mx-4",
-              "bg-background border border-border rounded-lg shadow-xl",
-              "generate-fab-modal-content",
-              isModalClosing
-                ? "animate-scale-down-fade-out"
-                : "animate-scale-up-fade-in",
-            )}
-          >
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-border">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold text-foreground">
-                  Generate Image
-                </h2>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Describe the image you want to create
-              </p>
+      <GlassModalBackdrop
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        className={cn(
+          "generate-fab-modal-backdrop",
+          isModalClosing ? "animate-fade-out" : "animate-fade-in",
+        )}
+        contentClassName={cn(
+          "relative w-full max-w-md mx-4",
+          "bg-background border border-border rounded-lg shadow-xl",
+          "generate-fab-modal-content",
+          isModalClosing
+            ? "animate-scale-down-fade-out"
+            : "animate-scale-up-fade-in",
+        )}
+      >
+        <div ref={modalRef} className="relative">
+          {/* Modal Header */}
+          <div className="px-6 py-4 border-b border-border">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold text-foreground">
+                Generate Image
+              </h2>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Describe the image you want to create
+            </p>
+          </div>
+
+          {/* Modal Body */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div className="space-y-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Image Description"
+                disabled={isGenerating}
+                className={cn(
+                  "w-full px-4 py-3 rounded-md border border-input",
+                  "bg-background text-foreground placeholder:text-muted-foreground",
+                  "focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent",
+                  "generate-fab-input",
+                  "text-base", // Prevent zoom on iOS
+                  isGenerating && "opacity-50 cursor-not-allowed",
+                )}
+              />
             </div>
 
-            {/* Modal Body */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="space-y-2">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Image Description"
-                  disabled={isGenerating}
-                  className={cn(
-                    "w-full px-4 py-3 rounded-md border border-input",
-                    "bg-background text-foreground placeholder:text-muted-foreground",
-                    "focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent",
-                    "generate-fab-input",
-                    "text-base", // Prevent zoom on iOS
-                    isGenerating && "opacity-50 cursor-not-allowed",
-                  )}
-                />
-              </div>
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={closeModal}
+                disabled={isGenerating}
+                className="flex-1 generate-fab-button"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={!description.trim() || isGenerating}
+                className={cn(
+                  "flex-1 relative generate-fab-button",
+                  isGenerating && "cursor-not-allowed",
+                )}
+              >
+                {isGenerating ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                    <span>Generating...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    <span>Generate</span>
+                  </div>
+                )}
+              </Button>
+            </div>
+          </form>
 
-              <div className="flex gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={closeModal}
-                  disabled={isGenerating}
-                  className="flex-1 generate-fab-button"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={!description.trim() || isGenerating}
-                  className={cn(
-                    "flex-1 relative generate-fab-button",
-                    isGenerating && "cursor-not-allowed",
-                  )}
-                >
-                  {isGenerating ? (
-                    <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                      <span>Generating...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4" />
-                      <span>Generate</span>
-                    </div>
-                  )}
-                </Button>
-              </div>
-            </form>
-
-            {/* Keyboard shortcut hint */}
-            <div className="px-6 pb-4">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Press Esc to close</span>
-                <div className="flex items-center gap-1">
-                  <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono generate-fab-kbd">
-                    ⌘K
-                  </kbd>
-                  <span>to toggle</span>
-                </div>
+          {/* Keyboard shortcut hint */}
+          <div className="px-6 pb-4">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Press Esc to close</span>
+              <div className="flex items-center gap-1">
+                <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono generate-fab-kbd">
+                  ⌘K
+                </kbd>
+                <span>to toggle</span>
               </div>
             </div>
           </div>
         </div>
-      )}
+      </GlassModalBackdrop>
     </>
   );
 }

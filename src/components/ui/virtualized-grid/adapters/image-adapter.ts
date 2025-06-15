@@ -14,9 +14,7 @@ export function imageToGridItem(image: ImageData, index?: number): GridItem {
     type: "image",
     width: image.meta?.width,
     height: image.meta?.height,
-    title:
-      image.meta?.title ||
-      (image.meta?.model ? `Model: ${image.meta.model}` : undefined),
+    title: image.meta?.model || image.meta?.title,
     subtitle: image.meta?.alt || "Click to view full size",
     // Use the actual aspect ratio from metadata, or calculate it from width/height if available
     aspectRatio:

@@ -16,6 +16,7 @@ export interface ImageMetadata {
   width: number;
   height: number;
   aspectRatio: string;
+  model: string;
 }
 
 export interface ImageData {
@@ -68,6 +69,7 @@ export function useImages(params: UseImagesParams) {
             : img.width / img.height,
         alt: img.alt,
         title: img.title || img.id,
+        model: img.model,
       },
     }));
 
@@ -105,6 +107,7 @@ export function useImages(params: UseImagesParams) {
             : img.width / img.height,
         alt: img.alt,
         title: img.title || img.id,
+        model: img.model,
       },
     }));
 

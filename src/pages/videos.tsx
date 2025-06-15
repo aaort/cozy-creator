@@ -20,7 +20,7 @@ const initialVideos: GridItem[] = videoMetadata.videos.map((vid, index) => ({
   url: vid.src,
   width: vid.width,
   height: vid.height,
-  title: `Video ${index + 1}`,
+  title: (vid as any).model || vid.title || `Video ${index + 1}`,
   subtitle: "Click to view full size",
   type: "video",
   aspectRatio: 16 / 9,
