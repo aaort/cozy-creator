@@ -13,7 +13,7 @@ function App() {
         <VirtualizedImageGrid
           gap={36}
           itemHeight={280}
-          itemsPerPage={20}
+          itemsPerPage={40}
           className="mx-auto"
           initialItemCount={40}
           baseImageUrl={STATIC_IMAGE_URL}
