@@ -1,4 +1,5 @@
 import { MediaModal, useMediaModal } from "@/components/ui/media-modal";
+import { useResponsiveGap } from "@/components/ui/virtualized-grid";
 import { imagesToGridItems } from "@/components/ui/virtualized-grid/adapters/image-adapter";
 import { ImageRenderer } from "@/components/ui/virtualized-grid/renderers/image-renderer";
 import type { GridItem } from "@/components/ui/virtualized-grid/virtualized-grid";
@@ -24,7 +25,7 @@ export function VirtualizedImageGrid({
   baseImageUrl = "https://picsum.photos/id/", // Default value for backward compatibility
   initialItemCount = 40,
   itemsPerPage = 20,
-  gap = 16,
+  gap: providedGap,
   onGridScroll,
   className = "",
 }: VirtualizedImageGridProps) {
@@ -41,6 +42,7 @@ export function VirtualizedImageGrid({
     isLastItem,
   } = useMediaModal();
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const gap = useResponsiveGap(providedGap || 16);
 
   // Custom row height calculation for images
   const getImageRowHeight = useCallback(
@@ -72,7 +74,7 @@ export function VirtualizedImageGrid({
         return gap;
       }
 
-      return maxRowHeight + gap / 2; // Use smaller spacing between rows
+      return maxRowHeight + gap * 0.6; // Use proportional spacing between rows
     },
     [],
   );

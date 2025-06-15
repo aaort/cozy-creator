@@ -6,6 +6,7 @@ import {
   useAvailableHeight,
   useContainerWidth,
   useResponsiveColumns,
+  useResponsiveGap,
   useScrollOffset,
   useVideos,
 } from "@components/ui/virtualized-grid";
@@ -39,6 +40,7 @@ export function Videos() {
     containerRef as React.RefObject<HTMLElement>,
   );
   const availableHeight = useAvailableHeight();
+  const gap = useResponsiveGap(16);
   const {
     isOpen,
     currentItem,
@@ -60,9 +62,9 @@ export function Videos() {
       gap: number,
     ) => {
       // Fixed height for video rows based on 16:9 aspect ratio
-      // We use a smaller gap (gap/2) to reduce the excessive vertical spacing
+      // Use a proportional gap that works well with the larger spacing
       const videoHeight = (itemWidth * 9) / 16;
-      return videoHeight + gap / 2;
+      return videoHeight + gap * 0.6;
     },
     [],
   );
@@ -111,7 +113,11 @@ export function Videos() {
       className="min-h-screen bg-background text-foreground overflow-auto"
       onScroll={(e) => updateSpace(e.currentTarget.scrollTop)}
     >
-      <main ref={containerRef} className="px-2" style={{ paddingTop: space }}>
+      <main
+        ref={containerRef}
+        className="px-4 md:px-8 lg:px-12 xl:px-16 max-w-7xl mx-auto"
+        style={{ paddingTop: space }}
+      >
         {containerWidth && (
           <VirtualizedGrid
             items={videos}
@@ -119,7 +125,7 @@ export function Videos() {
             hasNextPage={hasNextPage}
             isNextPageLoading={isNextPageLoading}
             loadNextPage={loadNextPage}
-            gap={16}
+            gap={gap}
             onGridScroll={handleScroll}
             columns={columns}
             availableHeight={availableHeight}

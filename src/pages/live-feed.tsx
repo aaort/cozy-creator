@@ -12,9 +12,12 @@ export function LiveFeed() {
   };
 
   return (
-    <main className="px-2" style={{ paddingTop: space }}>
+    <main
+      className="px-4 md:px-8 lg:px-12 xl:px-16 max-w-7xl mx-auto"
+      style={{ paddingTop: space }}
+    >
       <VirtualizedImageGrid
-        gap={16}
+        gap={32}
         itemsPerPage={40}
         initialItemCount={40}
         onGridScroll={handleGridScroll}
