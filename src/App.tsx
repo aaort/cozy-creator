@@ -1,8 +1,6 @@
-import { Footer } from "./components/layout/footer";
-import { Header } from "./components/layout/header";
-import { VirtualizedImageGrid } from "./components/ui/virtualized-image-grid";
-
-const STATIC_IMAGE_URL = "https://picsum.photos/id/";
+import { Header } from "@components/layout/header";
+import { VirtualizedImageGrid } from "@components/ui/virtualized-image-grid";
+import { STATIC_IMAGE_URL } from "@constants/data";
 
 function App() {
   return (
@@ -22,7 +20,7 @@ function App() {
         />
       </main>
 
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
