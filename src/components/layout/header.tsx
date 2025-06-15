@@ -16,7 +16,7 @@ function Header({ className, ...props }: HeaderProps) {
       `.trim()}
       {...props}
     >
-      <div className="flex h-14 items-center">
+      <div className="flex h-14 items-center relative z-10">
         {/* Logo */}
         <div className="mr-4 hidden md:flex">
           <Logo />
@@ -28,28 +28,28 @@ function Header({ className, ...props }: HeaderProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex items-center gap-4 text-sm lg:gap-6">
+        <nav className="flex items-center gap-1 text-sm lg:gap-2">
           <a
             href="/"
-            className="transition-colors hover:text-foreground/80 text-foreground/60"
+            className="px-3 py-2 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 text-foreground/70 font-medium"
           >
             Home
           </a>
           <a
             href="/about"
-            className="transition-colors hover:text-foreground/80 text-foreground/60"
+            className="px-3 py-2 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 text-foreground/70 font-medium"
           >
             About
           </a>
           <a
             href="/projects"
-            className="transition-colors hover:text-foreground/80 text-foreground/60"
+            className="px-3 py-2 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 text-foreground/70 font-medium"
           >
             Projects
           </a>
           <a
             href="/contact"
-            className="transition-colors hover:text-foreground/80 text-foreground/60"
+            className="px-3 py-2 rounded-md transition-all duration-200 hover:text-foreground hover:bg-accent/50 text-foreground/70 font-medium"
           >
             Contact
           </a>
@@ -61,8 +61,9 @@ function Header({ className, ...props }: HeaderProps) {
             {/* Search or other components can go here */}
           </div>
 
-          <ModeToggle />
-          {/* Theme Toggle */}
+          <div className="flex items-center space-x-2">
+            <ModeToggle />
+          </div>
         </div>
       </div>
     </header>
