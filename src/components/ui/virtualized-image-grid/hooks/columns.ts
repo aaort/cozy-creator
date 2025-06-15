@@ -7,15 +7,11 @@ export const useResponsiveColumns = () => {
   useEffect(() => {
     const updateColumns = () => {
       if (window.matchMedia("(min-width: 1536px)").matches) {
-        setColumns(6); // 2xl
+        setColumns(4); // 2xl
       } else if (window.matchMedia("(min-width: 1280px)").matches) {
-        setColumns(5); // xl
-      } else if (window.matchMedia("(min-width: 1024px)").matches) {
-        setColumns(4); // lg
-      } else if (window.matchMedia("(min-width: 768px)").matches) {
-        setColumns(3); // md
+        setColumns(3); // xl
       } else if (window.matchMedia("(min-width: 640px)").matches) {
-        setColumns(2); // sm
+        setColumns(2); // lg/md/sm
       } else {
         setColumns(1); // default/xs
       }
