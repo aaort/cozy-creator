@@ -5,9 +5,7 @@ import { STATIC_IMAGE_URL } from "@constants/data";
 function App() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="px-4 sm:px-6 lg:px-8 py-2">
-        <Header />
-      </div>
+      <Header />
 
       <main className="px-2 pb-8">
         <VirtualizedImageGrid
