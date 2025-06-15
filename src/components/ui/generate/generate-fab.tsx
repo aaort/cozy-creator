@@ -8,6 +8,7 @@ export function GenerateFab() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [hasEntranceCompleted, setHasEntranceCompleted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -74,6 +75,14 @@ export function GenerateFab() {
     };
   }, [handleKeyDown]);
 
+  // Remove entrance animation after initial render
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setHasEntranceCompleted(true);
+    }, 500); // Match the animation duration
+    return () => clearTimeout(timer);
+  }, []);
+
   // Focus input when modal opens
   useEffect(() => {
     if (isModalOpen && inputRef.current) {
@@ -104,9 +113,11 @@ export function GenerateFab() {
           className={cn(
             "h-14 w-14 rounded-full shadow-lg hover:shadow-xl",
             "bg-primary hover:bg-primary/90",
-            "generate-fab-button fab-pulse fab-entrance",
+            "generate-fab-button",
             "hover:scale-110 active:scale-95",
+            "transition-all duration-200 ease-out",
             "group",
+            !hasEntranceCompleted && "fab-entrance",
           )}
           aria-label="Generate Image (Cmd+K)"
         >

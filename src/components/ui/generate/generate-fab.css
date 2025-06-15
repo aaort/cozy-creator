@@ -59,22 +59,7 @@
   animation: scale-down-fade-out 0.2s ease-in forwards;
 }
 
-/* Floating action button pulse effect */
-@keyframes fab-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-  }
-}
-
-.fab-pulse:hover {
-  animation: fab-pulse 1.5s infinite;
-}
+/* Floating action button pulse effect - removed to prevent animation conflicts */
 
 /* Floating action button entrance animation */
 @keyframes fab-entrance {
@@ -130,6 +115,22 @@
     background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* FAB specific hover effects */
+.generate-fab-main {
+  transition: all 0.2s ease-out;
+}
+
+.generate-fab-main:hover {
+  transform: scale(1.1);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.generate-fab-main:active {
+  transform: scale(0.95);
 }
 
 /* Keyboard shortcut styling */
