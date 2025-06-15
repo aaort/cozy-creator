@@ -104,6 +104,15 @@
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Ensure exit animations override any other properties */
+.animate-fade-out {
+  animation: fade-out 0.3s ease-in forwards !important;
+}
+
+.animate-scale-down-fade-out {
+  animation: scale-down-fade-out 0.3s ease-in forwards !important;
+}
+
 /* Input focus ring animation */
 .generate-fab-input:focus {
   transition: all 0.2s ease-out;

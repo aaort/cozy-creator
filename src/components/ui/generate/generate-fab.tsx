@@ -6,6 +6,7 @@ import "./generate-fab.css";
 
 export function GenerateFab() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalClosing, setIsModalClosing] = useState(false);
   const [description, setDescription] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasEntranceCompleted, setHasEntranceCompleted] = useState(false);
@@ -17,9 +18,14 @@ export function GenerateFab() {
   }, []);
 
   const closeModal = useCallback(() => {
-    setIsModalOpen(false);
-    setDescription("");
-    setIsGenerating(false);
+    setIsModalClosing(true);
+    // Wait for exit animation to complete before actually closing
+    setTimeout(() => {
+      setIsModalOpen(false);
+      setIsModalClosing(false);
+      setDescription("");
+      setIsGenerating(false);
+    }, 300); // Match the exit animation duration
   }, []);
 
   const handleGenerate = useCallback(async () => {
@@ -133,8 +139,9 @@ export function GenerateFab() {
         <div
           className={cn(
             "fixed inset-0 z-50 flex items-center justify-center",
-            "bg-black/50 backdrop-blur-sm",
-            "generate-fab-modal-backdrop animate-fade-in",
+            "bg-background/80 backdrop-blur-xl",
+            "generate-fab-modal-backdrop",
+            isModalClosing ? "animate-fade-out" : "animate-fade-in",
           )}
           onClick={handleBackdropClick}
         >
@@ -143,7 +150,10 @@ export function GenerateFab() {
             className={cn(
               "relative w-full max-w-md mx-4",
               "bg-background border border-border rounded-lg shadow-xl",
-              "generate-fab-modal-content animate-scale-up-fade-in",
+              "generate-fab-modal-content",
+              isModalClosing
+                ? "animate-scale-down-fade-out"
+                : "animate-scale-up-fade-in",
             )}
           >
             {/* Modal Header */}
