@@ -30,8 +30,16 @@ export function VirtualizedImageGrid({
 }: VirtualizedImageGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<VariableSizeGrid<unknown>>(null);
-  const { isOpen, currentItem, openModal, closeModal, goToNext, goToPrevious } =
-    useMediaModal();
+  const {
+    isOpen,
+    currentItem,
+    openModal,
+    closeModal,
+    goToNext,
+    goToPrevious,
+    isFirstItem,
+    isLastItem,
+  } = useMediaModal();
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // Custom row height calculation for images
@@ -177,6 +185,8 @@ export function VirtualizedImageGrid({
         currentItem={currentItem}
         onNext={goToNext}
         onPrevious={goToPrevious}
+        isFirstItem={isFirstItem}
+        isLastItem={isLastItem}
       />
     </>
   );

@@ -10,6 +10,8 @@ interface UseMediaModalReturn {
   goToNext: () => void;
   goToPrevious: () => void;
   items: GridItem[];
+  isFirstItem: boolean;
+  isLastItem: boolean;
 }
 
 export function useMediaModal(): UseMediaModalReturn {
@@ -40,10 +42,19 @@ export function useMediaModal(): UseMediaModalReturn {
   const goToPrevious = useCallback(() => {
     if (!items.length) return;
 
+    // Check if we're at the first item
+    if (currentIndex === 0) {
+      return; // Don't allow going to previous if we're at the first item
+    }
+
     const prevIndex = (currentIndex - 1 + items.length) % items.length;
     setCurrentIndex(prevIndex);
     setCurrentItem(items[prevIndex]);
   }, [currentIndex, items]);
+
+  // Compute if we're at the first or last item
+  const isFirstItem = currentIndex === 0;
+  const isLastItem = items.length > 0 && currentIndex === items.length - 1;
 
   return {
     isOpen,
@@ -54,5 +65,7 @@ export function useMediaModal(): UseMediaModalReturn {
     goToNext,
     goToPrevious,
     items,
+    isFirstItem,
+    isLastItem,
   };
 }

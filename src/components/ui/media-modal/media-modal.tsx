@@ -8,6 +8,8 @@ interface MediaModalProps {
   currentItem: GridItem | null;
   onNext: () => void;
   onPrevious: () => void;
+  isFirstItem?: boolean;
+  isLastItem?: boolean;
 }
 
 export function MediaModal({
@@ -16,6 +18,8 @@ export function MediaModal({
   currentItem,
   onNext,
   onPrevious,
+  isFirstItem = false,
+  isLastItem = false,
 }: MediaModalProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -46,10 +50,15 @@ export function MediaModal({
           onClose();
           break;
         case "ArrowRight":
-          onNext();
+          if (!isLastItem) {
+            onNext();
+          }
           break;
         case "ArrowLeft":
-          onPrevious();
+          // Only go to previous if not the first item
+          if (!isFirstItem) {
+            onPrevious();
+          }
           break;
         case " ": // Space bar
           togglePlayback();
@@ -59,7 +68,15 @@ export function MediaModal({
           break;
       }
     },
-    [isOpen, onClose, onNext, onPrevious, togglePlayback],
+    [
+      isOpen,
+      onClose,
+      onNext,
+      onPrevious,
+      togglePlayback,
+      isFirstItem,
+      isLastItem,
+    ],
   );
 
   // Add event listeners for keyboard navigation
@@ -96,10 +113,14 @@ export function MediaModal({
   };
 
   // Handle video click
-  const handleVideoClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    togglePlayback();
-  };
+  const handleVideoClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      togglePlayback();
+    },
+    [togglePlayback],
+  );
 
   // Don't render anything if modal is not open or no item
   if (!isOpen || !currentItem) return null;
@@ -115,7 +136,7 @@ export function MediaModal({
         className="relative max-w-7xl max-h-[90vh] overflow-hidden rounded-lg modal-content"
       >
         {/* Media Content */}
-        <div className="relative cursor-zoom-in media-container">
+        <div className="relative media-container">
           {/* Loading Indicator */}
           {!isLoaded && (
             <div
@@ -133,7 +154,7 @@ export function MediaModal({
               src={currentItem.url}
               alt={currentItem.title || "Image"}
               className="max-h-[85vh] max-w-full object-contain transition-opacity duration-300"
-              style={{ opacity: isLoaded ? 1 : 0 }}
+              style={{ opacity: isLoaded ? 1 : 0, cursor: "default" }}
               onLoad={() => setIsLoaded(true)}
             />
           ) : (
@@ -145,18 +166,19 @@ export function MediaModal({
               autoPlay
               onClick={handleVideoClick}
               className="max-h-[85vh] max-w-full object-contain transition-opacity duration-300 cursor-pointer"
-              style={{ opacity: isLoaded ? 1 : 0 }}
+              style={{ opacity: isLoaded ? 1 : 0, cursor: "pointer" }}
               onLoadedData={() => setIsLoaded(true)}
+              onLoadedMetadata={() => setIsLoaded(true)}
+              onCanPlay={() => setIsLoaded(true)}
+              onPause={() => setIsPlaying(false)}
+              onPlay={() => setIsPlaying(true)}
             />
           )}
 
           {/* Play/Pause Indicator (only for videos) */}
           {currentItem.type === "video" && isLoaded && (
-            <div
-              className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-0 hover:opacity-100"
-              onClick={handleVideoClick}
-            >
-              <div className="bg-black/30 rounded-full p-4 transition-transform duration-300 transform hover:scale-110">
+            <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-0 hover:opacity-60 pointer-events-none">
+              <div className="bg-black/50 rounded-full p-4 transition-transform duration-300">
                 {isPlaying ? (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -192,56 +214,61 @@ export function MediaModal({
             </div>
           )}
 
-          {/* Navigation Buttons */}
-          <button
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 hover:scale-110 text-white rounded-full p-2 transition-all animate-fadeSlideIn left shadow-lg control-button"
-            style={{ animationDelay: "0.2s" }}
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              onPrevious();
-            }}
-            aria-label="Previous"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6"
+          {/* Navigation Buttons - Previous (hidden for first item) */}
+          {!isFirstItem && (
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 hover:scale-110 text-white rounded-full p-2 transition-all animate-fadeSlideIn left shadow-lg control-button"
+              style={{ animationDelay: "0.2s" }}
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onPrevious();
+              }}
+              aria-label="Previous"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 19.5L8.25 12l7.5-7.5"
-              />
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 19.5L8.25 12l7.5-7.5"
+                />
+              </svg>
+            </button>
+          )}
 
-          <button
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 hover:scale-110 text-white rounded-full p-2 transition-all animate-fadeSlideIn right shadow-lg control-button"
-            style={{ animationDelay: "0.2s" }}
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              onNext();
-            }}
-            aria-label="Next"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6"
+          {/* Next button - show only if there are more items */}
+          {!isLastItem && (
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 hover:scale-110 text-white rounded-full p-2 transition-all animate-fadeSlideIn right shadow-lg control-button"
+              style={{ animationDelay: "0.2s" }}
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onNext();
+              }}
+              aria-label="Next"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8.25 4.5l7.5 7.5-7.5 7.5"
-              />
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                />
+              </svg>
+            </button>
+          )}
 
           {/* Close Button */}
           <button

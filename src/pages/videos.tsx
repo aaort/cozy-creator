@@ -33,8 +33,16 @@ export function Videos() {
     containerRef as React.RefObject<HTMLElement>,
   );
   const availableHeight = useAvailableHeight();
-  const { isOpen, currentItem, openModal, closeModal, goToNext, goToPrevious } =
-    useMediaModal();
+  const {
+    isOpen,
+    currentItem,
+    openModal,
+    closeModal,
+    goToNext,
+    goToPrevious,
+    isFirstItem,
+    isLastItem,
+  } = useMediaModal();
 
   // Custom row height calculation for videos - uses a fixed 16:9 aspect ratio
   const getVideoRowHeight = useCallback(
@@ -123,6 +131,8 @@ export function Videos() {
         currentItem={currentItem}
         onNext={goToNext}
         onPrevious={goToPrevious}
+        isFirstItem={isFirstItem}
+        isLastItem={isLastItem}
       />
     </div>
   );
