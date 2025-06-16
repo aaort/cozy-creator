@@ -438,7 +438,7 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
                 if (typeof infiniteLoaderRef === "function") {
                   infiniteLoaderRef(grid);
                 } else if (infiniteLoaderRef) {
-                  //@ts-expect-error type is not defineds
+                  //@ts-expect-error type is not defined
                   infiniteLoaderRef.current = grid;
                 }
                 if (typeof ref === "function") {
