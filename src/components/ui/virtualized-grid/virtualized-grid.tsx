@@ -16,6 +16,7 @@ export interface GridItem {
 interface GridItemData {
   gap: number;
   itemWidth: number;
+  columnWidth: number;
   items: GridItem[];
   columnCount: number;
   renderItem: (
@@ -40,7 +41,15 @@ function GridItemComponent({
   style,
   data,
 }: GridItemProps) {
-  const { columnCount, items, itemWidth, gap, renderItem, onItemClick } = data;
+  const {
+    columnCount,
+    items,
+    itemWidth,
+    gap,
+    renderItem,
+    onItemClick,
+    columnWidth,
+  } = data;
   const itemIndex = rowIndex * columnCount + columnIndex;
 
   if (itemIndex >= items.length) return null;
@@ -55,18 +64,28 @@ function GridItemComponent({
     <div
       style={{
         ...style,
-        left: (style.left as number) + gap / 2,
-        top: (style.top as number) + gap / 4, // reduce vertical spacing
-        width: itemWidth,
-        height: itemHeight,
+        width: columnWidth,
+        height: itemHeight + gap / 2,
         overflow: "hidden",
         position: "absolute",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        paddingTop: gap / 4,
       }}
     >
-      {renderItem(item, itemWidth, false, onItemClick)}
+      <div
+        style={{
+          width: itemWidth,
+          height: itemHeight,
+          overflow: "hidden",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {renderItem(item, itemWidth, false, onItemClick)}
+      </div>
     </div>
   );
 }
@@ -130,11 +149,12 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
       [items],
     );
 
-    const itemWidth = Math.floor(
-      (containerWidth - gap * (columns + 1)) / columns,
-    );
-    const rowCount = Math.ceil(items.length / columns);
     const columnCount = columns;
+    const itemWidth = Math.floor(
+      (containerWidth - gap * (columns - 1)) / columns,
+    );
+    const columnWidth = containerWidth / columnCount;
+    const rowCount = Math.ceil(items.length / columns);
 
     // Use custom row height calculation function if provided, otherwise use default calculation
     // Calculate row heights based on items and their aspect ratios
@@ -170,7 +190,7 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
         }
 
         // Use minimal spacing for all item types to reduce vertical gaps
-        const defaultSpacing = gap / 4;
+        const defaultSpacing = gap / 2;
 
         return maxRowHeight + defaultSpacing;
       },
@@ -188,6 +208,7 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
     const gridItemData: GridItemData = {
       gap,
       itemWidth,
+      columnWidth,
       columnCount,
       items,
       renderItem,
@@ -252,7 +273,7 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
               }}
               className="custom-scrollbar overflow-y-auto overflow-x-hidden"
               columnCount={columnCount}
-              columnWidth={() => itemWidth + gap / 2} // horizontal spacing
+              columnWidth={() => containerWidth / columnCount}
               height={availableHeight}
               rowCount={rowCount}
               rowHeight={getRowHeight} // Use dynamic row height function
