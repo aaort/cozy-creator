@@ -30,9 +30,11 @@ interface GridItemData {
     width: number,
     isLoaded: boolean,
     onItemClick?: (item: GridItem) => void,
+    onLoadingStateChange?: (itemId: string, isLoading: boolean) => void,
   ) => React.ReactNode;
   onItemClick?: (item: GridItem) => void;
   enableItemAnimation: boolean;
+  onLoadingStateChange: (itemId: string, isLoading: boolean) => void;
 }
 
 interface GridItemProps {
@@ -98,7 +100,13 @@ function GridItemComponent({
           }),
         }}
       >
-        {renderItem(item, itemWidth, false, onItemClick)}
+        {renderItem(
+          item,
+          itemWidth,
+          true,
+          onItemClick,
+          data.onLoadingStateChange,
+        )}
       </div>
     </div>
   );
@@ -111,6 +119,7 @@ export interface VirtualizedGridProps {
     width: number,
     isLoaded: boolean,
     onItemClick?: (item: GridItem) => void,
+    onLoadingStateChange?: (itemId: string, isLoading: boolean) => void,
   ) => React.ReactNode;
   hasNextPage: boolean;
   isNextPageLoading: boolean;
@@ -134,6 +143,31 @@ export interface VirtualizedGridProps {
   enableInitialTransition?: boolean;
   /** Duration of the initial transition animation in milliseconds. Defaults to 500ms. */
   initialTransitionDuration?: number;
+  /**
+   * Threshold for triggering infinite loading. Higher values load more eagerly and reduce empty content during fast scrolling.
+   * Represents the number of items before the end of the list when loading should start. Defaults to 50.
+   */
+  infiniteLoaderThreshold?: number;
+  /**
+   * Number of rows to render outside the visible area for smoother scrolling.
+   * Higher values prevent blank content during fast scrolling but use more memory. Defaults to 8.
+   */
+  overscanRowCount?: number;
+  /**
+   * Number of columns to render outside the visible area.
+   * Usually kept low since horizontal scrolling is less common. Defaults to 2.
+   */
+  overscanColumnCount?: number;
+  /**
+   * Enable scroll prevention when content is loading. Prevents fast scrolling past unloaded content.
+   * Defaults to true.
+   */
+  enableScrollPrevention?: boolean;
+  /**
+   * Maximum percentage of loading items in visible area before scroll prevention kicks in.
+   * Lower values are more restrictive. Defaults to 0.3 (30%).
+   */
+  loadingThreshold?: number;
 }
 
 export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
@@ -153,10 +187,21 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
       onItemClick,
       enableInitialTransition = true,
       initialTransitionDuration = 500,
+      infiniteLoaderThreshold = 50,
+      overscanRowCount = 8,
+      overscanColumnCount = 2,
+      enableScrollPrevention = true,
+      loadingThreshold = 0.3,
     } = props;
     const gridRef = useRef<Grid>(null);
     const [isInitialRender, setIsInitialRender] = useState(true);
     const [showContent, setShowContent] = useState(!enableInitialTransition);
+    const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
+    const [visibleItemIds, setVisibleItemIds] = useState<Set<string>>(
+      new Set(),
+    );
+    const [isScrollPrevented, setIsScrollPrevented] = useState(false);
+    const lastScrollTime = useRef<number>(0);
 
     // Reset grid when columns change
     useEffect(() => {
@@ -180,8 +225,88 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
       }
     }, [enableInitialTransition, items.length, isInitialRender]);
 
+    // Track loading state changes
+    const handleLoadingStateChange = useCallback(
+      (itemId: string, isLoading: boolean) => {
+        setLoadingItems((prev) => {
+          const newSet = new Set(prev);
+          if (isLoading) {
+            newSet.add(itemId);
+          } else {
+            newSet.delete(itemId);
+          }
+          return newSet;
+        });
+      },
+      [],
+    );
+
+    // Calculate loading ratio in visible area
+    const getVisibleLoadingRatio = useCallback(() => {
+      if (visibleItemIds.size === 0) return 0;
+      let loadingCount = 0;
+      visibleItemIds.forEach((itemId) => {
+        if (loadingItems.has(itemId)) {
+          loadingCount++;
+        }
+      });
+      return loadingCount / visibleItemIds.size;
+    }, [loadingItems, visibleItemIds]);
+
+    // Enhanced scroll handler with prevention
+    const handleScroll = useCallback(
+      (props: GridOnScrollProps) => {
+        // Apply scroll prevention if enabled
+        if (enableScrollPrevention) {
+          const loadingRatio = getVisibleLoadingRatio();
+          const hasHeavyContent = Array.from(visibleItemIds).some((itemId) => {
+            const item = items.find((i) => i.id === itemId);
+            return item?.type === "video";
+          });
+
+          // More aggressive prevention for videos
+          const effectiveThreshold = hasHeavyContent
+            ? loadingThreshold * 0.6
+            : loadingThreshold;
+
+          if (loadingRatio > effectiveThreshold) {
+            // Prevent fast scrolling by returning early
+            // Only allow slow, deliberate scrolling
+            const now = Date.now();
+            const timeSinceLastScroll = now - lastScrollTime.current;
+
+            if (timeSinceLastScroll < 100) {
+              // Less than 100ms since last scroll
+              setIsScrollPrevented(true);
+              setTimeout(() => setIsScrollPrevented(false), 200);
+              return; // Block rapid scrolling
+            }
+
+            lastScrollTime.current = now;
+          } else {
+            setIsScrollPrevented(false);
+          }
+        }
+
+        if (onGridScroll) {
+          onGridScroll(props);
+        }
+      },
+      [
+        enableScrollPrevention,
+        loadingThreshold,
+        getVisibleLoadingRatio,
+        visibleItemIds,
+        items,
+        onGridScroll,
+      ],
+    );
+
     const isItemLoaded = useCallback(
-      (index: number) => !!items[index],
+      (index: number) => {
+        // Item is loaded if it exists in the items array
+        return !!items[index];
+      },
       [items],
     );
 
@@ -250,6 +375,7 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
       renderItem,
       onItemClick,
       enableItemAnimation: enableInitialTransition,
+      onLoadingStateChange: handleLoadingStateChange,
     };
 
     if (!containerWidth) {
@@ -299,14 +425,14 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
           `}
         </style>
         <InfiniteLoader
-          threshold={15}
+          threshold={infiniteLoaderThreshold}
           isItemLoaded={isItemLoaded}
           loadMoreItems={loadNextPage}
           itemCount={hasNextPage ? items.length + 1 : items.length}
         >
           {({ onItemsRendered, ref: infiniteLoaderRef }) => (
             <Grid
-              onScroll={onGridScroll}
+              onScroll={handleScroll}
               ref={(grid) => {
                 gridRef.current = grid;
                 if (typeof infiniteLoaderRef === "function") {
@@ -325,7 +451,9 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
                 overflowX: "hidden",
                 width: "100%",
                 overscrollBehavior: "contain", // Prevent scroll chaining
-                WebkitOverflowScrolling: "touch",
+                WebkitOverflowScrolling: enableScrollPrevention
+                  ? "auto"
+                  : "touch",
                 msOverflowStyle: "none", // Hide scrollbar in IE/Edge
                 scrollbarWidth: "none", // Firefox
               }}
@@ -337,22 +465,51 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
               rowHeight={getRowHeight} // Use dynamic row height function
               width={containerWidth}
               itemData={gridItemData}
+              overscanRowCount={overscanRowCount}
+              overscanColumnCount={overscanColumnCount}
+              useIsScrolling={true}
               onItemsRendered={({
                 visibleColumnStartIndex,
                 visibleColumnStopIndex,
                 visibleRowStartIndex,
                 visibleRowStopIndex,
+                overscanColumnStartIndex,
+                overscanColumnStopIndex,
+                overscanRowStartIndex,
+                overscanRowStopIndex,
               }) => {
                 const startIndex =
-                  visibleRowStartIndex * columnCount + visibleColumnStartIndex;
+                  overscanRowStartIndex * columnCount +
+                  overscanColumnStartIndex;
                 const stopIndex =
+                  overscanRowStopIndex * columnCount + overscanColumnStopIndex;
+
+                // Track visible items for scroll prevention
+                const visibleStart =
+                  visibleRowStartIndex * columnCount + visibleColumnStartIndex;
+                const visibleStop =
                   visibleRowStopIndex * columnCount + visibleColumnStopIndex;
+                const newVisibleIds = new Set<string>();
+
+                for (
+                  let i = visibleStart;
+                  i <= visibleStop && i < items.length;
+                  i++
+                ) {
+                  if (items[i]) {
+                    newVisibleIds.add(items[i].id);
+                  }
+                }
+                setVisibleItemIds(newVisibleIds);
 
                 onItemsRendered({
-                  overscanStartIndex: startIndex,
-                  overscanStopIndex: stopIndex,
-                  visibleStartIndex: startIndex,
-                  visibleStopIndex: stopIndex,
+                  overscanStartIndex: Math.max(0, startIndex - columnCount * 3),
+                  overscanStopIndex: Math.min(
+                    items.length - 1,
+                    stopIndex + columnCount * 3,
+                  ),
+                  visibleStartIndex: visibleStart,
+                  visibleStopIndex: visibleStop,
                 });
               }}
             >
@@ -384,6 +541,19 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
             </span>
           )}
         </div>
+
+        {/* Scroll prevention indicator */}
+        {isScrollPrevented && (
+          <div
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/80 text-white px-4 py-2 rounded-lg text-sm flex items-center space-x-2 z-50"
+            style={{
+              pointerEvents: "none",
+            }}
+          >
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            <span>Loading content...</span>
+          </div>
+        )}
       </div>
     );
   },
