@@ -1,4 +1,10 @@
-import React, { forwardRef, useCallback, useEffect, useRef } from "react";
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { VariableSizeGrid as Grid, type GridOnScrollProps } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
 
@@ -26,6 +32,7 @@ interface GridItemData {
     onItemClick?: (item: GridItem) => void,
   ) => React.ReactNode;
   onItemClick?: (item: GridItem) => void;
+  enableItemAnimation: boolean;
 }
 
 interface GridItemProps {
@@ -49,6 +56,7 @@ function GridItemComponent({
     renderItem,
     onItemClick,
     columnWidth,
+    enableItemAnimation,
   } = data;
   const itemIndex = rowIndex * columnCount + columnIndex;
 
@@ -82,6 +90,12 @@ function GridItemComponent({
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          ...(enableItemAnimation && {
+            opacity: 0,
+            transform: "translateY(8px)",
+            animation: `gridItemFadeIn 0.4s ease-out forwards`,
+            animationDelay: `${Math.min(itemIndex * 25, 600)}ms`,
+          }),
         }}
       >
         {renderItem(item, itemWidth, false, onItemClick)}
@@ -116,6 +130,10 @@ export interface VirtualizedGridProps {
     gap: number,
   ) => number;
   defaultRowHeight?: number;
+  /** Enable smooth transition animation when the grid first renders. Defaults to true. */
+  enableInitialTransition?: boolean;
+  /** Duration of the initial transition animation in milliseconds. Defaults to 500ms. */
+  initialTransitionDuration?: number;
 }
 
 export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
@@ -133,8 +151,12 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
       availableHeight,
       containerWidth,
       onItemClick,
+      enableInitialTransition = true,
+      initialTransitionDuration = 500,
     } = props;
     const gridRef = useRef<Grid>(null);
+    const [isInitialRender, setIsInitialRender] = useState(true);
+    const [showContent, setShowContent] = useState(!enableInitialTransition);
 
     // Reset grid when columns change
     useEffect(() => {
@@ -143,6 +165,20 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
         gridRef.current.resetAfterRowIndex(0, true);
       }
     }, [columns]);
+
+    // Handle initial transition
+    useEffect(() => {
+      if (enableInitialTransition && items.length > 0 && isInitialRender) {
+        const timer = setTimeout(() => {
+          setShowContent(true);
+          setIsInitialRender(false);
+        }, 50); // Small delay to ensure DOM is ready
+
+        return () => clearTimeout(timer);
+      } else if (!enableInitialTransition && isInitialRender) {
+        setIsInitialRender(false);
+      }
+    }, [enableInitialTransition, items.length, isInitialRender]);
 
     const isItemLoaded = useCallback(
       (index: number) => !!items[index],
@@ -213,6 +249,7 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
       items,
       renderItem,
       onItemClick,
+      enableItemAnimation: enableInitialTransition,
     };
 
     if (!containerWidth) {
@@ -238,8 +275,29 @@ export const VirtualizedGrid = forwardRef<Grid, VirtualizedGridProps>(
           touchAction: "pan-y",
           WebkitOverflowScrolling: "touch",
           position: "relative",
+          opacity: showContent ? 1 : 0,
+          transform: showContent
+            ? "translateY(0) scale(1)"
+            : "translateY(20px) scale(0.95)",
+          transition: enableInitialTransition
+            ? `opacity ${initialTransitionDuration}ms ease-out, transform ${initialTransitionDuration}ms ease-out`
+            : "none",
         }}
       >
+        <style>
+          {`
+            @keyframes gridItemFadeIn {
+              from {
+                opacity: 0;
+                transform: translateY(8px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+          `}
+        </style>
         <InfiniteLoader
           threshold={15}
           isItemLoaded={isItemLoaded}
