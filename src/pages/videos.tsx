@@ -123,18 +123,18 @@ export function Videos() {
       >
         {containerWidth && (
           <VirtualizedGrid
+            gap={gap}
             items={videos}
+            columns={columns}
             renderItem={renderVideo}
             hasNextPage={hasNextPage}
-            isNextPageLoading={isNextPageLoading}
             loadNextPage={loadNextPage}
-            gap={gap}
             onGridScroll={handleScroll}
-            columns={columns}
-            availableHeight={availableHeight}
-            containerWidth={containerWidth}
             onItemClick={handleItemClick}
             getRowHeight={getVideoRowHeight}
+            availableHeight={availableHeight}
+            containerWidth={containerWidth - 200}
+            isNextPageLoading={isNextPageLoading}
           />
         )}
       </main>
