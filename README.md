@@ -173,12 +173,6 @@ cozy-creator/
 
 Currently, the app uses hardcoded URLs for media content. To make it configurable:
 
-```env
-# .env.local (create this file)
-VITE_STATIC_IMAGE_URL=your-image-cdn-url
-VITE_VIDEO_CDN_URL=your-video-cdn-url
-```
-
 ## 📝 What's Missing / TODO
 
 ### High Priority
