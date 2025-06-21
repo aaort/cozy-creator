@@ -4,10 +4,10 @@ import { imagesToGridItems } from "@/components/ui/virtualized-grid/adapters/ima
 import { ImageRenderer } from "@/components/ui/virtualized-grid/renderers/image-renderer";
 import type { GridItem } from "@/components/ui/virtualized-grid/virtualized-grid";
 import { VirtualizedGrid } from "@/components/ui/virtualized-grid/virtualized-grid";
+import { useAvailableHeight } from "@components/ui/virtualized-grid/hooks/height";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GridOnScrollProps, VariableSizeGrid } from "react-window";
 import { useResponsiveColumns } from "./hooks/columns";
-import { useAvailableHeight } from "./hooks/height";
 import { useImages } from "./hooks/images";
 import { useContainerWidth } from "./hooks/width";
 

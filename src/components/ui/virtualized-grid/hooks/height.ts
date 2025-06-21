@@ -1,33 +1,41 @@
 import { HEADER_HEIGHT } from "@constants/layout";
 import { useEffect, useState } from "react";
 
-export function useAvailableHeight(
-  offset: number = HEADER_HEIGHT,
-  bottomPadding: number = 80,
-): number {
-  const [height, setHeight] = useState(0);
+// Hook to calculate available height for the grid
+export const useAvailableHeight = () => {
+  const [availableHeight, setAvailableHeight] = useState(600);
 
   useEffect(() => {
-    // Define updateHeight inside the effect to avoid dependency issues
-    const updateHeight = () => {
+    const calculateHeight = () => {
+      // Get window height
       const windowHeight = window.innerHeight;
-      setHeight(windowHeight - offset - bottomPadding);
+
+      console.log("windowHeight", windowHeight);
+
+      // Calculate available height by subtracting fixed header and footer heights
+      const calculatedHeight = Math.max(400, windowHeight);
+
+      console.log("calculatedHeight", calculatedHeight);
+      setAvailableHeight(calculatedHeight);
     };
 
-    // Set initial height
-    updateHeight();
+    // Initial calculation
+    calculateHeight();
 
-    // Update height on window resize
-    window.addEventListener("resize", updateHeight);
+    // Recalculate on resize
+    window.addEventListener("resize", calculateHeight);
 
-    // Clean up
+    // Also recalculate after a short delay to ensure DOM is ready
+    const timer = setTimeout(calculateHeight, 100);
+
     return () => {
-      window.removeEventListener("resize", updateHeight);
+      window.removeEventListener("resize", calculateHeight);
+      clearTimeout(timer);
     };
-  }, [offset, bottomPadding]);
+  }, []);
 
-  return height;
-}
+  return availableHeight;
+};
 
 export function useScrollOffset(
   initialOffset: number = HEADER_HEIGHT,
